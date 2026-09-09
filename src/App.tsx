@@ -413,11 +413,11 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
 // ─── Screen: Dashboard Producción ─────────────────────────────────────────────
 
 const LOTS = [
-  { code: "EX-2026-001", product: "Pota entera congelada", species: "Dosidicus gigas", date: "28/08/2026", qty: "12,500 kg", status: "En QA", statusColor: "blue" as const },
-  { code: "EX-2026-002", product: "Anchoveta HGT", species: "Engraulis ringens", date: "29/08/2026", qty: "8,200 kg", status: "Conforme", statusColor: "green" as const },
-  { code: "EX-2026-003", product: "Calamar tubo IQF", species: "Loligo gahi", date: "30/08/2026", qty: "5,400 kg", status: "Observado", statusColor: "amber" as const },
-  { code: "EX-2026-004", product: "Langostino pelado", species: "Litopenaeus vannamei", date: "31/08/2026", qty: "3,800 kg", status: "En Despacho", statusColor: "teal" as const },
-  { code: "EX-2026-005", product: "Caballa HGT congelada", species: "Scomber japonicus", date: "31/08/2026", qty: "9,100 kg", status: "Pendiente QA", statusColor: "gray" as const },
+  { code: "LT-001", product: "Conchas de Abanico", species: "Argopecten purpuratus", date: "10/09/2026", qty: "10,500 kg", status: "En Produccion", statusColor: "gray" as const },
+  { code: "LT-002", product: "Anchoveta HGT", species: "Engraulis ringens", date: "01/01/2026", qty: "8,500 kg", status: "En Calidad", statusColor: "blue" as const },
+  { code: "LT-003", product: "Calamar tubo IQF", species: "Loligo gahi", date: "30/08/2026", qty: "10,400 kg", status: "Observado", statusColor: "amber" as const },
+  { code: "LT-004", product: "Langostino ", species: "Litopenaeus vannamei", date: "28/08/2026", qty: "3,800 kg", status: "En Logística", statusColor: "teal" as const },
+  { code: "LT-005", product: "Perico", species: "Coryphaena hippurus", date: "10/08/2026", qty: "6,100 kg", status: "En Despacho", statusColor: "teal" as const },
 ];
 
 function DashboardProd({ onNav }: { onNav: (s: Screen) => void }) {
