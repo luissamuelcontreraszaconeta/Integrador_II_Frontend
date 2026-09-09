@@ -1,0 +1,10 @@
+{
+  "description": "Optimize traceability and certification management for hydrobiological products with a centralized system that enhances efficiency and compliance for fishing companies.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
