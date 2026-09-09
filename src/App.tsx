@@ -620,10 +620,10 @@ function LotDetail({ onNav }: { onNav: (s: Screen) => void }) {
             <div className="flex items-center gap-3 mb-2">
               <button onClick={() => onNav("dashboard-prod")} className="text-slate-400 hover:text-slate-600 text-sm cursor-pointer">← Volver</button>
               <span className="text-slate-200">|</span>
-              <h1 className="text-xl font-bold text-[#0a1628] mono">Lote EX-2026-001</h1>
+              <h1 className="text-xl font-bold text-[#0a1628] mono">LT-001</h1>
               <Badge color="amber">⚠ Observado — Cadena de frío</Badge>
             </div>
-            <p className="text-sm text-slate-500">Pota entera congelada · Dosidicus gigas · 12,500 kg · Creado 28/08/2026</p>
+            <p className="text-sm text-slate-500">Conchas de Abanico · Argopecten purpuratus · 10,500 kg · Creado 01/09/2026</p>
           </div>
           <div className="flex gap-3">
             <Btn variant="outline" size="sm">🖨️ Imprimir QR</Btn>
@@ -858,10 +858,7 @@ function LotDetail({ onNav }: { onNav: (s: Screen) => void }) {
               ))}
             </div>
 
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
-              <p className="text-xs font-semibold text-amber-800 mb-1">⚠ Estado: OBSERVADO</p>
-              <p className="text-xs text-amber-700">1 inconsistencia en cadena de frío requiere acción</p>
-            </div>
+          
 
             <Btn variant="outline" full size="sm" onClick={() => onNav("smart-validation")}>
               Ver validación completa
@@ -887,10 +884,7 @@ function DashboardQA({ onNav }: { onNav: (s: Screen) => void }) {
           <StatCard label="Alertas activas" value="2" icon="🚨" color="red" />
         </div>
 
-        <Alert type="warning" title="Alerta activa: Temperatura fuera de rango">
-          Lote EX-2026-001 — Registro de cadena de frío requiere revisión inmediata. Inspector: María Ríos
-        </Alert>
-
+      
         <Card>
           <div className="p-6 border-b border-slate-100 flex items-center justify-between">
             <h2 className="text-base font-semibold text-slate-800">Cola de inspecciones QA</h2>
@@ -906,10 +900,10 @@ function DashboardQA({ onNav }: { onNav: (s: Screen) => void }) {
             </thead>
             <tbody>
               {[
-                { code: "EX-2026-001", product: "Pota congelada", date: "28/08/2026", qa: "Conforme", qa_color: "green" as const, cold: "⚠ Observada", cold_color: "amber" as const, priority: "Alta" },
-                { code: "EX-2026-002", product: "Anchoveta HGT", date: "29/08/2026", qa: "Conforme", qa_color: "green" as const, cold: "✓ Normal", cold_color: "teal" as const, priority: "Normal" },
-                { code: "EX-2026-003", product: "Calamar IQF", date: "30/08/2026", qa: "Observado", qa_color: "amber" as const, cold: "✓ Normal", cold_color: "teal" as const, priority: "Alta" },
-                { code: "EX-2026-005", product: "Caballa HGT", date: "31/08/2026", qa: "Pendiente", qa_color: "gray" as const, cold: "Pendiente", cold_color: "gray" as const, priority: "Normal" },
+                { code: "LT-001", product: "Pota congelada", date: "28/08/2026", qa: "Conforme", qa_color: "green" as const, cold: "⚠ Observada", cold_color: "amber" as const, priority: "Alta" },
+                { code: "LT-002", product: "Anchoveta HGT", date: "29/08/2026", qa: "Conforme", qa_color: "green" as const, cold: "✓ Normal", cold_color: "teal" as const, priority: "Normal" },
+                { code: "LT-003", product: "Calamar IQF", date: "30/08/2026", qa: "Observado", qa_color: "amber" as const, cold: "✓ Normal", cold_color: "teal" as const, priority: "Alta" },
+                { code: "LT-005", product: "Caballa HGT", date: "31/08/2026", qa: "Pendiente", qa_color: "gray" as const, cold: "Pendiente", cold_color: "gray" as const, priority: "Normal" },
               ].map((row) => (
                 <tr key={row.code} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
                   <td className="px-6 py-4 mono text-sm font-semibold text-[#1a3a5c]">{row.code}</td>
@@ -948,7 +942,7 @@ function QualityControl({ onNav }: { onNav: (s: Screen) => void }) {
           <Card className="max-w-md w-full p-8 text-center">
             <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4 text-3xl">✅</div>
             <h2 className="text-xl font-bold text-slate-800 mb-2">Inspección registrada</h2>
-            <p className="text-slate-500 text-sm mb-2">Lote EX-2026-005 · Resultado: <strong>{result}</strong></p>
+            <p className="text-slate-500 text-sm mb-2">LT-005 · Resultado: <strong>{result}</strong></p>
             <p className="text-slate-400 text-xs mb-6">Inspector: María Ríos · {new Date().toLocaleDateString("es-PE")}</p>
             <div className="flex gap-3">
               <Btn variant="ghost" full onClick={() => { setSaved(false); setResult(""); }}>Nueva inspección</Btn>
@@ -962,14 +956,14 @@ function QualityControl({ onNav }: { onNav: (s: Screen) => void }) {
 
   return (
     <div className="flex-1 flex flex-col overflow-auto bg-slate-50">
-      <Header title="Control de Calidad" subtitle="Inspección organoléptica — Lote EX-2026-005" />
+      <Header title="Control de Calidad" subtitle="Inspección organoléptica — Lote LT-005" />
       <div className="flex-1 p-8">
         <div className="max-w-3xl mx-auto flex flex-col gap-5">
           <Card className="p-6">
             <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg mb-6">
               <div className="w-10 h-10 rounded-lg bg-[#1a3a5c] flex items-center justify-center text-white text-sm">🔬</div>
               <div>
-                <p className="text-sm font-semibold text-slate-800">Lote EX-2026-005 — Caballa HGT congelada</p>
+                <p className="text-sm font-semibold text-slate-800">Lote LT-005 — Caballa HGT congelada</p>
                 <p className="text-xs text-slate-500">Scomber japonicus · 9,100 kg · Producción: 31/08/2026</p>
               </div>
               <Badge color="gray" >Pendiente inspección</Badge>
@@ -1047,7 +1041,7 @@ function ColdChain({ onNav }: { onNav: (s: Screen) => void }) {
 
   return (
     <div className="flex-1 flex flex-col overflow-auto bg-slate-50">
-      <Header title="Cadena de Frío" subtitle="Registro manual de temperaturas — Lote EX-2026-001" />
+      <Header title="Cadena de Frío" subtitle="Registro manual de temperaturas — Lote LT-001" />
       <div className="flex-1 p-8 flex gap-6">
         {/* Form */}
         <div className="w-80 shrink-0 flex flex-col gap-5">
@@ -1161,7 +1155,7 @@ function SmartValidation({ onNav }: { onNav: (s: Screen) => void }) {
 
   return (
     <div className="flex-1 flex flex-col overflow-auto bg-slate-50">
-      <Header title="Validación Inteligente" subtitle="Verificación automática del expediente — Lote EX-2026-001" />
+      <Header title="Validación Inteligente" subtitle="Verificación automática del expediente — LT-001" />
       <div className="flex-1 p-8">
         <div className="max-w-2xl mx-auto flex flex-col gap-5">
           {/* Status banner */}
@@ -1243,10 +1237,10 @@ function DashboardLogistics({ onNav }: { onNav: (s: Screen) => void }) {
       <Header title="LogisTrac — Dashboard Logística" subtitle="Gestión de certificación y despacho" />
       <div className="flex-1 p-8 flex flex-col gap-6">
         <div className="grid grid-cols-4 gap-5">
-          <StatCard label="Listos para certificación" value="5" icon="📋" color="teal" />
-          <StatCard label="En proceso certificación" value="3" icon="⏳" color="blue" />
+          <StatCard label="Listos para certificación" value="3" icon="📋" color="teal" />
+          <StatCard label="En proceso certificación" value="2" icon="⏳" color="blue" />
           <StatCard label="Observados" value="2" icon="⚠️" color="amber" />
-          <StatCard label="Aptos para despacho" value="4" icon="🚢" color="green" />
+          <StatCard label="Aptos para despacho" value="2" icon="🚢" color="green" />
         </div>
 
         <Card>
@@ -1265,10 +1259,10 @@ function DashboardLogistics({ onNav }: { onNav: (s: Screen) => void }) {
               </thead>
               <tbody>
                 {[
-                  { code: "EX-2026-001", prod: "green", qa: "green", cold: "amber", docs: "green", cert: "gray", disp: "gray" },
-                  { code: "EX-2026-002", prod: "green", qa: "green", cold: "green", docs: "green", cert: "blue", disp: "gray" },
-                  { code: "EX-2026-003", prod: "green", qa: "amber", cold: "green", docs: "amber", cert: "gray", disp: "gray" },
-                  { code: "EX-2026-004", prod: "green", qa: "green", cold: "green", docs: "green", cert: "green", disp: "green" },
+                  { code: "LT-001", prod: "green", qa: "green", cold: "amber", docs: "green", cert: "gray", disp: "gray" },
+                  { code: "LT-002", prod: "green", qa: "green", cold: "green", docs: "green", cert: "blue", disp: "gray" },
+                  { code: "LT-003", prod: "green", qa: "amber", cold: "green", docs: "amber", cert: "gray", disp: "gray" },
+                  { code: "LT-004", prod: "green", qa: "green", cold: "green", docs: "green", cert: "green", disp: "green" },
                 ].map((row) => {
                   const icon = (c: string) => c === "green" ? "✓" : c === "amber" ? "⚠" : c === "blue" ? "⏳" : c === "red" ? "✗" : "–";
                   return (
@@ -1299,7 +1293,7 @@ function CertificationMgmt({ onNav }: { onNav: (s: Screen) => void }) {
 
   return (
     <div className="flex-1 flex flex-col overflow-auto bg-slate-50">
-      <Header title="Gestión de Certificación" subtitle="Lote EX-2026-002 — Preparación de expediente" />
+      <Header title="Gestión de Certificación" subtitle="Lote LT-2026-006 — Preparación de expediente" />
       <div className="flex-1 p-8 flex gap-6">
         <div className="flex-1 flex flex-col gap-5">
           {/* Estado */}
@@ -1358,7 +1352,7 @@ function CertificationMgmt({ onNav }: { onNav: (s: Screen) => void }) {
             </div>
             {status === "Aprobado" && (
               <Alert type="success" title="Certificación aprobada">
-                El lote EX-2026-002 ha sido aprobado. Puede proceder a autorizar el despacho.
+                El lote LT-002 ha sido aprobado. Puede proceder a autorizar el despacho.
               </Alert>
             )}
           </Card>
@@ -1378,7 +1372,7 @@ function CertificationMgmt({ onNav }: { onNav: (s: Screen) => void }) {
             <h3 className="text-sm font-semibold text-slate-800 mb-4">Resumen del lote</h3>
             <dl className="flex flex-col gap-3 text-sm">
               {[
-                ["Lote", "EX-2026-002"],
+                ["Lote", "LT-002"],
                 ["Producto", "Anchoveta HGT"],
                 ["Cantidad", "8,200 kg"],
                 ["Destino", "España — Grupo Calvo S.A."],
