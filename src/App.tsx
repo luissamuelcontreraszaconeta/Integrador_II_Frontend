@@ -1697,9 +1697,9 @@ function DashboardMgmt() {
             </thead>
             <tbody>
               {[
-                { code: "EX-2026-001", prod: "Pota congelada", stage: "Validación", resp: "M. Ríos", eta: "08/09/2026", color: "amber" as const, status: "Observado" },
-                { code: "EX-2026-002", prod: "Anchoveta HGT", stage: "Certificación", resp: "A. Velásquez", eta: "05/09/2026", color: "blue" as const, status: "En proceso" },
-                { code: "EX-2026-004", prod: "Langostino pelado", stage: "Despacho", resp: "A. Velásquez", eta: "05/09/2026", color: "green" as const, status: "Apto" },
+                { code: "LT-001", prod: "Pota congelada", stage: "Validación", resp: "M. Ríos", eta: "08/09/2026", color: "amber" as const, status: "Observado" },
+                { code: "LT-002", prod: "Anchoveta HGT", stage: "Certificación", resp: "A. Velásquez", eta: "05/09/2026", color: "blue" as const, status: "En proceso" },
+                { code: "LT-004", prod: "Langostino pelado", stage: "Despacho", resp: "A. Velásquez", eta: "05/09/2026", color: "green" as const, status: "Apto" },
               ].map((row) => (
                 <tr key={row.code} className="border-b border-slate-50 hover:bg-slate-50">
                   <td className="px-5 py-3 mono text-sm font-semibold text-[#1a3a5c]">{row.code}</td>
