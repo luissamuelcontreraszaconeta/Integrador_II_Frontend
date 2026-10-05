@@ -15,8 +15,8 @@ Las tecnologías e insumos utilizados en este proyecto han sido verificados dire
 | **Vite** | `8.2.2` | Herramienta de compilación y servidor de desarrollo ultrarrápido HMR. |
 | **Tailwind CSS** | `4.3.3` | Framework CSS utilitario para el diseño visual responsive de grado empresarial. |
 | **Lucide React** | `1.38.0` | Colección de íconos vectoriales UI para tableros y navegación. |
-| **Recharts** | `3.10.1` | Librería de gráficos interactivos utilizada para la visualización de la cadena de frío. |
-| **Oxlint** | `1.79.0` | Herramienta de linter ultrarrápida para análisis estático de código. |
+| **Recharts** | `3.10.1` | Librería de gráficos interactivos utilizada para visualización de métricas, plantas y cadena de frío. |
+| **qrcode.react** | `4.2.0` | Generación de códigos QR vectoriales estándar y escaneables para trazabilidad de lotes. |
 
 ---
 
@@ -28,122 +28,69 @@ El proyecto está estructurado bajo principios de modularidad y separación de r
 exportrace-ica-frontend/
 ├── public/                    # Recursos estáticos servidos directamente
 ├── src/
-│   ├── auth/                  # Servicio de autenticación y guardias de seguridad
-│   │   ├── auth.guard.ts      # Guard de ruta para usuarios autenticados
-│   │   ├── auth.service.ts    # Servicio de Login e integración con REST API
-│   │   ├── auth.types.ts      # Interfaces de sesión, tokens y usuarios
-│   │   └── role.guard.ts      # Guard para restricciones de acceso por rol
-│   │
-│   ├── components/            # Componentes reutilizables de UI y Lotes
+│   ├── auth/                  # Servicio de autenticación, tipos y guardias RBAC / SuperAdmin
+│   ├── components/            # Componentes reutilizables de UI, Lotes y Notificaciones
 │   │   ├── layout/            # AppLayout, Header, Sidebar, PageHeader
-│   │   ├── lots/              # LotTimeline, ColdChainGraph, ExpedienteDigitalView, QRCodeModal
-│   │   └── ui/                # Componentes base: Button, Input, Select, Modal, StatusBadge, StatsCard
-│   │
-│   ├── context/               # Manejo de Estado Global React Context
-│   │   ├── AuthContext.tsx    # Estado global de sesión, usuario activo y JWT
-│   │   └── LotContext.tsx     # Estado global de lotes, filtros y acciones de trazabilidad
-│   │
+│   │   ├── lots/              # LotTimeline, ColdChainGraph, TraceabilityQRCode, QRCodeModal
+│   │   ├── notifications/     # NotificationBell (campana con badge y popover)
+│   │   └── ui/                # Componentes base: Button, Input, Modal, StatusBadge, StatsCard
+│   ├── layouts/               # Layouts específicos (SuperAdminLayout)
 │   ├── pages/                 # Vistas principales del sistema según perfil empresarial
-│   │   ├── Administration/    # Vista de Administración de Usuarios y Sistema (AdminPage.tsx)
-│   │   ├── Dashboard/         # Tablero principal adaptable por rol (DashboardPage.tsx)
-│   │   ├── Login/             # Pantalla empresarial de inicio de sesión (LoginPage.tsx)
-│   │   ├── Logistics/         # Vistas de Logística, SANIPES y Despachos (DispatchPage.tsx, etc.)
-│   │   ├── Lots/              # Registro y detalle de lotes (RegisterLotPage.tsx, LotDetailPage.tsx)
-│   │   ├── Management/        # Vista de Gerencia Ejecutiva e Indicadores (ManagementPage.tsx)
-│   │   ├── Operations/        # Vista de Operaciones y Producción (OperationsPage.tsx)
-│   │   └── QA/                # Vista de Control de Calidad e Inspección (QADashboardPage.tsx)
-│   │
-│   ├── services/              # Cliente HTTP para comunicación REST
-│   │   ├── api.ts             # Métodos del servicio de Lotes, Calidad y Despachos
-│   │   └── apiClient.ts       # Cliente Fetch centralizado con inyección de JWT Bearer Token
-│   │
-│   └── types/                 # Definiciones de tipo TypeScript
-│       ├── lot.ts             # Interfaces de Lote, Inspección QA y Cadena de Frío
-│       ├── certification.ts   # Interfaces de Certificados SANIPES y Expediente Digital
-│       └── user.ts            # Interfaces de Usuario y Logs de Auditoría
-│
-├── .env.example               # Variables de entorno de plantilla
-├── package.json               # Configuración de dependencias
+│   │   ├── Administration/    # Administración general de usuarios y roles
+│   │   ├── Dashboard/         # Tablero principal adaptable por rol
+│   │   ├── Login/             # Pantalla de inicio de sesión
+│   │   ├── Logistics/         # Vistas de Logística, SANIPES y Despachos
+│   │   ├── Lots/              # Registro y detalle de lotes
+│   │   ├── Management/        # Vista de Gerencia Ejecutiva e Indicadores
+│   │   ├── Notifications/     # Centro de Notificaciones en vivo
+│   │   ├── Public/            # Verificación Pública de Trazabilidad QR (/verificar/:token)
+│   │   ├── Quality/           # Inspección organoléptica y evidencia fotográfica
+│   │   └── SuperAdmin/        # Dashboard interactivo, gobierno de usuarios, RBAC y auditoría
+│   ├── services/              # Clientes de API REST (apiClient, superAdminService, etc.)
+│   └── types/                 # Definiciones de tipos TypeScript
+├── .env.example               # Plantilla de variables de entorno
+├── package.json               # Configuración de dependencias y scripts
 └── vite.config.ts             # Configuración del empaquetador Vite
 ```
 
 ---
 
-## 🧩 3. Componentes Funcionales Principales
-
-| Componente / Vista | Propósito | Rol Autorizado | Interacción REST Backend |
-| :--- | :--- | :--- | :--- |
-| **`LoginPage.tsx`** | Pantalla de ingreso empresarial (Email/Password). | Todos (Público) | `POST /api/auth/login` |
-| **`AdminPage.tsx`** | Gestión de usuarios, asignación de roles y métricas del sistema. | `ADMINISTRADOR` | `GET /api/users`, `POST /api/users` |
-| **`OperationsPage.tsx`** | Tablero de producción, registro de lotes y lotes pendientes. | `PRODUCCION` | `GET /api/lots`, `POST /api/lots` |
-| **`QADashboardPage.tsx`** | Evaluación organoléptica y registro de lecturas de temperatura. | `QA` | `POST /api/quality/lot/{id}`, `POST /api/cold-chain/lot/{id}` |
-| **`DispatchPage.tsx`** | Tramitación de Certificado SANIPES y despacho de contenedores. | `LOGISTICA` | `POST /api/certifications/...`, `POST /api/dispatches/...` |
-| **`ManagementPage.tsx`** | Reportes consolidados, exportabilidad e indicadores ejecutivos. | `GERENCIA` | `GET /api/lots`, `GET /api/lots/{id}/history` |
-| **`QRCodeModal.tsx`** | Renderizado del código QR determinista del lote. | Todos | `GET /api/lots/qr/{token}` |
-| **`ColdChainGraph.tsx`** | Gráfico interactivo Recharts de curva de temperatura de congelamiento. | `QA`, `GERENCIA` | `GET /api/cold-chain/lot/{id}` |
-
----
-
-## 🔒 4. Autenticación y Control de Acceso por Roles
-
-### 4.1 Flujo de Autenticación
-1. El usuario ingresa únicamente **Correo Electrónico** y **Contraseña**.
-2. **El usuario NO selecciona su rol en la interfaz**.
-3. El cliente efectúa una petición `POST /api/auth/login` al backend.
-4. El backend valida las credenciales en SQLite y retorna el **JWT Token** junto a los datos del usuario y su **Rol**.
-5. `AuthContext` guarda el JWT en `localStorage` (`exportrace_jwt_token`) y configura la sesión activa.
-6. El frontend redirige automáticamente al usuario al Dashboard que le corresponde según su rol.
-
-```text
-  Usuario React               AuthService               Backend REST
-       │                           │                         │
-       │─── 1. Ingresa credenciales ──►                      │
-       │                         │─── 2. POST /auth/login ──►│
-       │                         │◄── 3. JWT + User + Role ──│
-       │◄── 4. Guarda Token y ────│                         │
-       │    Redirige por Rol     │                         │
-```
-
----
-
-## 🔑 5. Credenciales de Prueba para Iniciar Sesión
-
-> [!IMPORTANT]
-> **Aviso de Entorno Académico / Demostración**:  
-> Estas cuentas son exclusivamente para desarrollo, demostración y pruebas académicas. No utilizar estas credenciales en ambientes productivos.
-
-Una vez levantados ambos servidores, ingresar desde la pantalla de login utilizando cualquiera de las siguientes cuentas:
+## 🔑 3. Credenciales de Prueba para Iniciar Sesión
 
 | Rol Empresarial | Correo Electrónico | Contraseña | Comportamiento en Frontend |
 | :--- | :--- | :--- | :--- |
-| **Administrador** | `admin@exportrace.pe` | `Admin123` | Acceso a `/dashboard/admin` y configuración del sistema |
-| **Producción** | `produccion@exportrace.pe` | `Prod123` | Acceso a `/dashboard/operations` y registro de lotes |
-| **QA / Calidad** | `qa@exportrace.pe` | `QA123` | Acceso a `/dashboard/qa` e inspección de frío |
-| **Logística & Comex** | `logistica@exportrace.pe` | `Log123` | Acceso a `/dashboard/logistics`, SANIPES y despachos |
-| **Gerencia** | `gerencia@exportrace.pe` | `Ger123` | Acceso a `/dashboard/management` y consulta ejecutiva |
+| **Super Administrador** | `superadmin@exportrace.pe` | `SuperAdmin2026!` | Panel de SuperAdmin, gobierno RBAC y auditoría global |
+| **Administrador** | `admin@exportrace.pe` | `Admin123` | Administración corporativa y gestión de usuarios |
+| **Producción** | `produccion@exportrace.pe` | `Prod123` | Registro y seguimiento de lotes pesqueros |
+| **QA / Calidad** | `qa@exportrace.pe` | `QA123` | Calidad organoléptica, fotos y cadena de frío |
+| **Logística & Comex** | `logistica@exportrace.pe` | `Log123` | Expediente SANIPES, DUA y despachos |
+| **Gerencia** | `gerencia@exportrace.pe` | `Ger123` | KPIs consolidados y supervisión gerencial |
 
 ---
 
-## ⚙️ 6. Variables de Entorno (.env.example)
-
-Crear un archivo `.env` en la raíz de `exportrace-ica-frontend/` utilizando como base el archivo `.env.example`:
+## ⚙️ 4. Variables de Entorno (.env.example)
 
 ```properties
+# URL base de la API REST del backend
+# En desarrollo local: http://localhost:8080/api
+# En producción (Render): https://exportrace-backend.onrender.com/api
 VITE_API_BASE_URL=http://localhost:8080/api
+
+# URL base pública del frontend para códigos QR de trazabilidad
+# En desarrollo local: http://localhost:5173
+# En producción (Render): https://exportrace-frontend.onrender.com
+VITE_PUBLIC_APP_URL=http://localhost:5173
 ```
 
 ---
 
-## 🚀 7. Instalación y Ejecución
+## 🚀 5. Ejecución en Desarrollo Local
 
 ```bash
-# 1. Navegar al directorio del frontend
-cd exportrace-ica-frontend
-
-# 2. Instalar dependencias
+# 1. Instalar dependencias
 npm install
 
-# 3. Iniciar el servidor de desarrollo Vite (Puerto 5173)
+# 2. Iniciar el servidor de desarrollo Vite (Puerto 5173)
 npm run dev
 ```
 
@@ -151,39 +98,35 @@ El cliente estará disponible en: **`http://localhost:5173/`**
 
 ---
 
-## 🐳 8. Contenerización con Docker y Despliegue en Render
+## 🌐 6. Despliegue en Render como Static Site
 
-El frontend incluye un `Dockerfile` multi-etapa optimizado con servidor web **Nginx Alpine** y enrutamiento SPA.
+El frontend de ExporTrace está optimizado para desplegarse como un **Static Site** de alto rendimiento en Render (sin requerir Docker en el frontend).
 
-### 8.1 Construcción y Ejecución con Docker Local
+### 6.1 Parámetros de Configuración en Render:
 
-```bash
-# 1. Construir la imagen Docker
-docker build -t exportrace-frontend --build-arg VITE_API_BASE_URL=http://localhost:8080/api .
+1. Crear un **New Static Site** en Render y conectar el repositorio: `https://github.com/luissamuelcontreraszaconeta/Integrador_II_Frontend`.
+2. Completar los campos:
+   * **Name**: `exportrace-frontend`
+   * **Branch**: `main`
+   * **Root Directory**: *(dejar en blanco)*
+   * **Build Command**: `npm ci && npm run build`
+   * **Publish Directory**: `dist`
+3. Configurar las **Environment Variables**:
+   * `VITE_API_BASE_URL`: `https://exportrace-backend.onrender.com/api`
+   * `VITE_PUBLIC_APP_URL`: `https://exportrace-frontend.onrender.com` *(o la URL asignada por Render)*
+4. Configurar la **Regla de Redirección SPA (Redirects / Rewrites)**:
+   * **Source**: `/*`
+   * **Destination**: `/index.html`
+   * **Action**: `Rewrite` (200)
 
-# 2. Ejecutar el contenedor en el puerto 80 (o 3000)
-docker run -p 3000:80 exportrace-frontend
-```
-
-### 8.2 Despliegue en Render
-
-1. **Como Static Site**:
-   - Build Command: `npm install && npm run build`
-   - Publish Directory: `dist`
-   - Variables de entorno:
-     - `VITE_API_BASE_URL=https://tu-backend.onrender.com/api`
-     - `VITE_PUBLIC_APP_URL=https://tu-frontend.onrender.com`
-   - Redirect / Rewrite: `/*` -> `/index.html` (Rewrite 200).
-2. **Como Web Service (Docker)**:
-   - Render construirá la imagen automáticamente usando `Dockerfile` y `nginx.conf`.
+> [!NOTE]
+> La regla Rewrite es indispensable para que las rutas SPA de React Router (`/dashboard`, `/quality`, `/notifications`, `/verificar/:token`, `/superadmin/users`) funcionen correctamente al recargar la página (F5) o ingresar mediante enlaces directos sin arrojar error 404.
 
 ---
 
-## 📱 11. Módulo de Verificación Pública QR
+## 📱 7. Módulo de Verificación Pública QR
 
-El frontend implementa códigos QR reales mediante `qrcode.react` (`QRCodeSVG`, nivel de corrección H y quiet zone de 2 módulos):
-- **Componentes**: `TraceabilityQRCode.tsx` y `QRCodeModal.tsx`.
-- **Ruta Pública**: `/verificar/:token` (implementada en `PublicTraceabilityPage.tsx`), accesible sin necesidad de autenticación previa.
-- **Vista Imprimible**: En `ExpedienteDigitalView.tsx`, el QR generado se preserva nítidamente al imprimir o exportar a PDF para auditorías o etiquetas de despacho.
-
-
+El sistema genera códigos QR estándares mediante `qrcode.react` (`QRCodeSVG`, nivel de corrección H):
+- **URL Codificada en el QR**: `${VITE_PUBLIC_APP_URL}/verificar/${qrToken}`
+- **Ruta Pública**: `/verificar/:token` (abierta al público sin requerir JWT).
+- Al escanear el QR con cualquier teléfono inteligente, el usuario accede a la ficha pública de trazabilidad del lote.

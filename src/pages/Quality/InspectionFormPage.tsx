@@ -432,12 +432,18 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
                     className="relative bg-white border border-slate-200 rounded-xl p-2.5 shadow-xs flex items-center space-x-3 group"
                   >
                     <img
-                      src={ev.fileUrl.startsWith('http') ? ev.fileUrl : `http://localhost:8080${ev.fileUrl}`}
+                      src={
+                        ev.fileUrl.startsWith('http')
+                          ? ev.fileUrl
+                          : `${(import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '')}${ev.fileUrl.startsWith('/') ? '' : '/'}${ev.fileUrl}`
+                      }
                       alt={ev.fileName}
                       className="w-16 h-16 rounded-lg object-cover border border-slate-100 shrink-0 cursor-pointer"
                       onClick={() =>
                         setLightboxImage({
-                          url: ev.fileUrl.startsWith('http') ? ev.fileUrl : `http://localhost:8080${ev.fileUrl}`,
+                          url: ev.fileUrl.startsWith('http')
+                            ? ev.fileUrl
+                            : `${(import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '')}${ev.fileUrl.startsWith('/') ? '' : '/'}${ev.fileUrl}`,
                           title: ev.fileName,
                           desc: ev.description,
                         })
