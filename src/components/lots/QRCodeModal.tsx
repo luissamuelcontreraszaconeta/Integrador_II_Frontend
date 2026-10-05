@@ -3,6 +3,7 @@ import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { TraceabilityQRCode } from './TraceabilityQRCode';
 import { QrCode, Copy, Check, ExternalLink } from 'lucide-react';
+import { PUBLIC_APP_URL } from '../../services/apiConfig';
 
 interface QRCodeModalProps {
   isOpen: boolean;
@@ -21,9 +22,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
 }) => {
   const [copied, setCopied] = useState(false);
 
-  const publicBaseUrl =
-    (import.meta.env.VITE_PUBLIC_APP_URL as string | undefined) ||
-    (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173');
+  const publicBaseUrl = PUBLIC_APP_URL;
 
   const effectiveToken = qrToken || `QR-${lotCode.replace(/[^a-zA-Z0-9]/g, '')}`;
   const verificationUrl = `${publicBaseUrl.replace(/\/$/, '')}/verificar/${effectiveToken}`;

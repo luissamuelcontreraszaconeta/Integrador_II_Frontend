@@ -1,6 +1,7 @@
 import React from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { ShieldCheck } from 'lucide-react';
+import { PUBLIC_APP_URL } from '../../services/apiConfig';
 
 interface TraceabilityQRCodeProps {
   qrToken?: string;
@@ -17,10 +18,8 @@ export const TraceabilityQRCode: React.FC<TraceabilityQRCodeProps> = ({
   includeText = true,
   className = '',
 }) => {
-  // Use VITE_PUBLIC_APP_URL if defined, fallback to current window origin or localhost
-  const publicBaseUrl =
-    (import.meta.env.VITE_PUBLIC_APP_URL as string | undefined) ||
-    (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173');
+  // Use centralized PUBLIC_APP_URL
+  const publicBaseUrl = PUBLIC_APP_URL;
 
   // Token fallback if not present
   const effectiveToken = qrToken || `QR-${lotCode.replace(/[^a-zA-Z0-9]/g, '')}`;

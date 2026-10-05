@@ -17,6 +17,7 @@ import {
   FileText
 } from 'lucide-react';
 import { qualityService } from '../../services/qualityService';
+import { BACKEND_ROOT_URL } from '../../services/apiConfig';
 import type { QaEvidenceItem } from '../../types/quality';
 
 interface InspectionFormPageProps {
@@ -435,7 +436,7 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
                       src={
                         ev.fileUrl.startsWith('http')
                           ? ev.fileUrl
-                          : `${(import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '')}${ev.fileUrl.startsWith('/') ? '' : '/'}${ev.fileUrl}`
+                          : `${BACKEND_ROOT_URL}${ev.fileUrl.startsWith('/') ? '' : '/'}${ev.fileUrl}`
                       }
                       alt={ev.fileName}
                       className="w-16 h-16 rounded-lg object-cover border border-slate-100 shrink-0 cursor-pointer"
@@ -443,7 +444,7 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
                         setLightboxImage({
                           url: ev.fileUrl.startsWith('http')
                             ? ev.fileUrl
-                            : `${(import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '')}${ev.fileUrl.startsWith('/') ? '' : '/'}${ev.fileUrl}`,
+                            : `${BACKEND_ROOT_URL}${ev.fileUrl.startsWith('/') ? '' : '/'}${ev.fileUrl}`,
                           title: ev.fileName,
                           desc: ev.description,
                         })
