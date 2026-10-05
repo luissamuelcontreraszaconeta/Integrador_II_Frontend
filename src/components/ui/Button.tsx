@@ -18,7 +18,7 @@ export const Button: React.FC<ButtonProps> = ({
   disabled,
   ...props
 }) => {
-  const baseStyles = 'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed select-none cursor-pointer';
+  const baseStyles = 'inline-flex items-center justify-center font-semibold rounded-lg transition-all duration-150 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-offset-white disabled:opacity-50 disabled:cursor-not-allowed select-none cursor-pointer';
 
   const sizeStyles = {
     sm: 'px-3 py-1.5 text-xs gap-1.5',
@@ -27,12 +27,12 @@ export const Button: React.FC<ButtonProps> = ({
   };
 
   const variantStyles = {
-    primary: 'bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-900/30 focus:ring-blue-500 border border-blue-500/50',
-    teal: 'bg-teal-600 hover:bg-teal-500 text-white shadow-md shadow-teal-900/30 focus:ring-teal-500 border border-teal-500/50',
-    secondary: 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 focus:ring-slate-500',
-    danger: 'bg-rose-600 hover:bg-rose-500 text-white shadow-md shadow-rose-900/30 focus:ring-rose-500 border border-rose-500/50',
-    outline: 'bg-transparent border border-slate-700 hover:bg-slate-800/60 text-slate-300 hover:text-white focus:ring-slate-500',
-    ghost: 'bg-transparent hover:bg-slate-800/40 text-slate-400 hover:text-slate-200 focus:ring-slate-500',
+    primary: 'bg-[#0F6CBD] hover:bg-[#0D5CA0] text-white shadow-xs focus:ring-[#0F6CBD] active:bg-[#0B4D86]',
+    teal: 'bg-[#0F9D8A] hover:bg-[#0D8776] text-white shadow-xs focus:ring-[#0F9D8A] active:bg-[#0B7264]',
+    secondary: 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 shadow-xs focus:ring-slate-400',
+    danger: 'bg-rose-600 hover:bg-rose-700 text-white shadow-xs focus:ring-rose-500 active:bg-rose-800',
+    outline: 'bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 hover:text-slate-900 focus:ring-slate-400 shadow-xs',
+    ghost: 'bg-transparent hover:bg-slate-100 text-slate-600 hover:text-slate-900 focus:ring-slate-400',
   };
 
   return (
@@ -42,7 +42,7 @@ export const Button: React.FC<ButtonProps> = ({
       {...props}
     >
       {isLoading ? (
-        <Loader2 className="w-4 h-4 animate-spin text-current" />
+        <Loader2 className="w-4 h-4 animate-spin text-current shrink-0" />
       ) : (
         icon && <span className="inline-flex shrink-0">{icon}</span>
       )}

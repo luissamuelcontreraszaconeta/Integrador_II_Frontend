@@ -22,26 +22,26 @@ export const LotTimeline: React.FC<LotTimelineProps> = ({ timeline }) => {
   };
 
   return (
-    <div className="w-full bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg">
-      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">
+    <div className="w-full bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
+      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-4">
         Flujo de Trazabilidad del Lote Digital
       </h3>
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
         {timeline.map((item, idx) => {
           const info = stageLabels[item.stage];
           
-          let statusStyle = 'bg-slate-950 border-slate-800 text-slate-500';
-          let iconBadge = <Clock className="w-3.5 h-3.5 text-slate-500" />;
+          let statusStyle = 'bg-slate-50 border-slate-200 text-slate-500';
+          let iconBadge = <Clock className="w-3.5 h-3.5 text-slate-400" />;
 
           if (item.status === 'COMPLETED') {
-            statusStyle = 'bg-emerald-950/60 border-emerald-700/80 text-emerald-300 shadow-sm shadow-emerald-950';
-            iconBadge = <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />;
+            statusStyle = 'bg-emerald-50 border-emerald-200 text-emerald-800 shadow-2xs';
+            iconBadge = <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />;
           } else if (item.status === 'IN_PROGRESS') {
-            statusStyle = 'bg-sky-950/80 border-sky-600 text-sky-200 animate-pulse ring-1 ring-sky-500/50';
-            iconBadge = <Clock className="w-4 h-4 text-sky-400 shrink-0 animate-spin" />;
+            statusStyle = 'bg-sky-50 border-sky-300 text-sky-900 ring-2 ring-sky-400/20';
+            iconBadge = <Clock className="w-4 h-4 text-sky-600 shrink-0 animate-spin" />;
           } else if (item.status === 'OBSERVED') {
-            statusStyle = 'bg-rose-950/80 border-rose-700 text-rose-300';
-            iconBadge = <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />;
+            statusStyle = 'bg-rose-50 border-rose-200 text-rose-800';
+            iconBadge = <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />;
           }
 
           return (
@@ -58,17 +58,17 @@ export const LotTimeline: React.FC<LotTimelineProps> = ({ timeline }) => {
               </div>
 
               <div>
-                <span className="text-[10px] uppercase font-semibold tracking-wider block">
+                <span className="text-[10px] uppercase font-bold block opacity-80">
                   {item.status === 'COMPLETED'
                     ? 'Completado'
                     : item.status === 'IN_PROGRESS'
-                    ? 'En proceso'
+                    ? 'En Proceso'
                     : item.status === 'OBSERVED'
                     ? 'Observado'
                     : 'Pendiente'}
                 </span>
                 {item.updatedAt && (
-                  <span className="text-[9px] text-slate-400 block mt-0.5">
+                  <span className="text-[9px] opacity-70 block font-mono mt-0.5">
                     {new Date(item.updatedAt).toLocaleDateString()}
                   </span>
                 )}

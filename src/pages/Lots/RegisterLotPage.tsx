@@ -102,10 +102,10 @@ export const RegisterLotPage: React.FC<RegisterLotPageProps> = ({ onNavigate }) 
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Section 1: General Product Info */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl space-y-4">
-          <div className="flex items-center gap-2.5 border-b border-slate-800 pb-3">
-            <Package className="w-5 h-5 text-teal-400" />
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-100">
+        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
+          <div className="flex items-center gap-2.5 border-b border-slate-200 pb-3">
+            <Package className="w-5 h-5 text-[#0F6CBD]" />
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900">
               1. Información General del Producto
             </h3>
           </div>
@@ -156,10 +156,10 @@ export const RegisterLotPage: React.FC<RegisterLotPageProps> = ({ onNavigate }) 
         </div>
 
         {/* Section 2: Origin & Vessel Info */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl space-y-4">
-          <div className="flex items-center gap-2.5 border-b border-slate-800 pb-3">
-            <Ship className="w-5 h-5 text-blue-400" />
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-100">
+        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
+          <div className="flex items-center gap-2.5 border-b border-slate-200 pb-3">
+            <Ship className="w-5 h-5 text-[#0F6CBD]" />
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900">
               2. Información de Origen y Desembarque
             </h3>
           </div>
@@ -194,10 +194,10 @@ export const RegisterLotPage: React.FC<RegisterLotPageProps> = ({ onNavigate }) 
         </div>
 
         {/* Section 3: Production & Processing Line */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl space-y-4">
-          <div className="flex items-center gap-2.5 border-b border-slate-800 pb-3">
-            <Factory className="w-5 h-5 text-cyan-400" />
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-100">
+        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
+          <div className="flex items-center gap-2.5 border-b border-slate-200 pb-3">
+            <Factory className="w-5 h-5 text-[#0F9D8A]" />
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900">
               3. Especificaciones de Producción en Planta
             </h3>
           </div>
@@ -222,11 +222,11 @@ export const RegisterLotPage: React.FC<RegisterLotPageProps> = ({ onNavigate }) 
               onChange={(e) => setShiftSupervisor(e.target.value)}
             />
             <div className="sm:col-span-2">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
                 Observaciones de Producción
               </label>
               <textarea
-                className="w-full bg-slate-950 border border-slate-700/80 rounded-lg p-3 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full bg-white border border-slate-300 rounded-lg p-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0F6CBD]/20 focus:border-[#0F6CBD]"
                 rows={3}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
@@ -236,7 +236,7 @@ export const RegisterLotPage: React.FC<RegisterLotPageProps> = ({ onNavigate }) 
         </div>
 
         {/* Form Actions */}
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
           <Button
             variant="outline"
             size="lg"

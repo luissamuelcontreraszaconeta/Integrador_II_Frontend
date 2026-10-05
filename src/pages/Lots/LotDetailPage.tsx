@@ -55,10 +55,10 @@ export const LotDetailPage: React.FC<LotDetailPageProps> = ({ lotId, onNavigate 
 
   if (!lot) {
     return (
-      <div className="p-12 text-center text-slate-400 bg-slate-900 rounded-xl border border-slate-800">
-        <AlertTriangle className="w-12 h-12 text-amber-400 mx-auto mb-3" />
-        <h3 className="text-lg font-bold text-slate-200">Lote no encontrado</h3>
-        <p className="text-xs text-slate-400 mt-1">El lote especificado ({lotId}) no existe o fue eliminado.</p>
+      <div className="p-12 text-center text-slate-500 bg-white rounded-xl border border-slate-200 shadow-sm">
+        <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-3" />
+        <h3 className="text-lg font-bold text-slate-800">Lote no encontrado</h3>
+        <p className="text-xs text-slate-500 mt-1">El lote especificado ({lotId}) no existe o fue eliminado.</p>
         <Button variant="teal" size="sm" onClick={() => onNavigate('/lots')} className="mt-4">
           Volver a la lista de lotes
         </Button>
@@ -114,7 +114,7 @@ export const LotDetailPage: React.FC<LotDetailPageProps> = ({ lotId, onNavigate 
               variant="outline"
               size="sm"
               onClick={() => setQrModalOpen(true)}
-              icon={<QrCode className="w-4 h-4 text-teal-400" />}
+              icon={<QrCode className="w-4 h-4 text-[#0F6CBD]" />}
             >
               Código QR
             </Button>
@@ -126,15 +126,15 @@ export const LotDetailPage: React.FC<LotDetailPageProps> = ({ lotId, onNavigate 
       <LotTimeline timeline={lot.timeline} />
 
       {/* Tabs navigation */}
-      <div className="border-b border-slate-800 flex items-center gap-2 overflow-x-auto">
+      <div className="border-b border-slate-200 flex items-center gap-2 overflow-x-auto">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as any)}
             className={`flex items-center gap-2 px-4 py-3 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
               activeTab === tab.id
-                ? 'border-teal-500 text-teal-300 bg-slate-900/60'
-                : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/30'
+                ? 'border-[#0F6CBD] text-[#0F6CBD] bg-blue-50/50'
+                : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50'
             }`}
           >
             {tab.icon}
@@ -147,48 +147,48 @@ export const LotDetailPage: React.FC<LotDetailPageProps> = ({ lotId, onNavigate 
       {activeTab === 'RESUMEN' && (
         <div className="space-y-6">
           {/* Summary Scorecard Table */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl space-y-4">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-100 border-b border-slate-800 pb-3">
+          <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-3">
               Estado Integral por Áreas de Responsabilidad
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 text-center">
-              <div className="p-3 bg-slate-950/60 rounded-lg border border-slate-800">
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
                 <span className="text-[10px] text-slate-500 uppercase block font-semibold">Producción</span>
-                <span className="text-xs font-bold text-emerald-400 mt-1 block">COMPLETO</span>
+                <span className="text-xs font-bold text-emerald-600 mt-1 block">COMPLETO</span>
               </div>
-              <div className="p-3 bg-slate-950/60 rounded-lg border border-slate-800">
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
                 <span className="text-[10px] text-slate-500 uppercase block font-semibold">Calidad QA</span>
-                <span className={`text-xs font-bold mt-1 block ${lot.qa?.organolepticResult === 'CONFORME' ? 'text-emerald-400' : lot.qa ? 'text-rose-400' : 'text-amber-400'}`}>
+                <span className={`text-xs font-bold mt-1 block ${lot.qa?.organolepticResult === 'CONFORME' ? 'text-emerald-600' : lot.qa ? 'text-rose-600' : 'text-amber-600'}`}>
                   {lot.qa ? lot.qa.organolepticResult : 'PENDIENTE'}
                 </span>
               </div>
-              <div className="p-3 bg-slate-950/60 rounded-lg border border-slate-800">
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
                 <span className="text-[10px] text-slate-500 uppercase block font-semibold">Cadena Frío</span>
-                <span className={`text-xs font-bold mt-1 block ${lot.coldChainLogs.length > 0 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                <span className={`text-xs font-bold mt-1 block ${lot.coldChainLogs.length > 0 ? 'text-emerald-600' : 'text-amber-600'}`}>
                   {lot.coldChainLogs.length > 0 ? `${lot.coldChainLogs.length} LECTURAS` : 'PENDIENTE'}
                 </span>
               </div>
-              <div className="p-3 bg-slate-950/60 rounded-lg border border-slate-800">
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
                 <span className="text-[10px] text-slate-500 uppercase block font-semibold">Documentación</span>
-                <span className="text-xs font-bold text-emerald-400 mt-1 block">
+                <span className="text-xs font-bold text-emerald-600 mt-1 block">
                   {lot.documents.length >= 2 ? 'COMPLETA' : 'INCOMPLETA'}
                 </span>
               </div>
-              <div className="p-3 bg-slate-950/60 rounded-lg border border-slate-800">
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
                 <span className="text-[10px] text-slate-500 uppercase block font-semibold">Validación</span>
-                <span className={`text-xs font-bold mt-1 block ${lot.validation?.isValidated ? 'text-emerald-400' : 'text-amber-400'}`}>
+                <span className={`text-xs font-bold mt-1 block ${lot.validation?.isValidated ? 'text-emerald-600' : 'text-amber-600'}`}>
                   {lot.validation?.isValidated ? 'APROBADO' : 'PENDIENTE'}
                 </span>
               </div>
-              <div className="p-3 bg-slate-950/60 rounded-lg border border-slate-800">
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
                 <span className="text-[10px] text-slate-500 uppercase block font-semibold">Certificación</span>
-                <span className="text-xs font-bold text-sky-400 mt-1 block">
+                <span className="text-xs font-bold text-[#0F6CBD] mt-1 block">
                   {certificate ? certificate.status : 'NO INICIADA'}
                 </span>
               </div>
-              <div className="p-3 bg-slate-950/60 rounded-lg border border-slate-800">
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
                 <span className="text-[10px] text-slate-500 uppercase block font-semibold">Despacho</span>
-                <span className={`text-xs font-bold mt-1 block ${lot.status === 'READY_FOR_DISPATCH' || lot.status === 'DISPATCHED' ? 'text-emerald-400' : 'text-slate-500'}`}>
+                <span className={`text-xs font-bold mt-1 block ${lot.status === 'READY_FOR_DISPATCH' || lot.status === 'DISPATCHED' ? 'text-emerald-600' : 'text-slate-400'}`}>
                   {lot.status === 'DISPATCHED' ? 'DESPACHADO' : lot.status === 'READY_FOR_DISPATCH' ? 'APTO' : 'BLOQUEADO'}
                 </span>
               </div>
@@ -208,34 +208,34 @@ export const LotDetailPage: React.FC<LotDetailPageProps> = ({ lotId, onNavigate 
 
       {/* TAB CONTENT: 2. PRODUCCION */}
       {activeTab === 'PRODUCCION' && (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl space-y-6">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-100 border-b border-slate-800 pb-3">
+        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-6">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-3">
             Ficha Técnica de Origen y Producción
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
             <div>
-              <span className="text-xs text-slate-400 uppercase font-semibold block">Producto</span>
-              <span className="font-semibold text-slate-100">{lot.production.productName}</span>
+              <span className="text-xs text-slate-500 uppercase font-semibold block">Producto</span>
+              <span className="font-semibold text-slate-900">{lot.production.productName}</span>
             </div>
             <div>
-              <span className="text-xs text-slate-400 uppercase font-semibold block">Especie Científica</span>
-              <span className="font-semibold text-teal-300 italic">{lot.production.scientificName}</span>
+              <span className="text-xs text-slate-500 uppercase font-semibold block">Especie Científica</span>
+              <span className="font-semibold text-[#0F9D8A] italic">{lot.production.scientificName}</span>
             </div>
             <div>
-              <span className="text-xs text-slate-400 uppercase font-semibold block">Volumen / Medida</span>
-              <span className="font-semibold text-slate-100 font-mono">{lot.production.quantity} {lot.production.unit}</span>
+              <span className="text-xs text-slate-500 uppercase font-semibold block">Volumen / Medida</span>
+              <span className="font-semibold text-slate-900 font-mono">{lot.production.quantity} {lot.production.unit}</span>
             </div>
             <div>
-              <span className="text-xs text-slate-400 uppercase font-semibold block">Proveedor Pesquero</span>
-              <span className="font-semibold text-slate-200">{lot.production.supplier}</span>
+              <span className="text-xs text-slate-500 uppercase font-semibold block">Proveedor Pesquero</span>
+              <span className="font-semibold text-slate-800">{lot.production.supplier}</span>
             </div>
             <div>
-              <span className="text-xs text-slate-400 uppercase font-semibold block">Embarcación</span>
-              <span className="font-semibold text-slate-200">{lot.production.vesselName}</span>
+              <span className="text-xs text-slate-500 uppercase font-semibold block">Embarcación</span>
+              <span className="font-semibold text-slate-800">{lot.production.vesselName}</span>
             </div>
             <div>
-              <span className="text-xs text-slate-400 uppercase font-semibold block">Puerto de Recepción</span>
-              <span className="font-semibold text-slate-200">{lot.production.portOfOrigin}</span>
+              <span className="text-xs text-slate-500 uppercase font-semibold block">Puerto de Recepción</span>
+              <span className="font-semibold text-slate-800">{lot.production.portOfOrigin}</span>
             </div>
           </div>
         </div>
@@ -243,9 +243,9 @@ export const LotDetailPage: React.FC<LotDetailPageProps> = ({ lotId, onNavigate 
 
       {/* TAB CONTENT: 3. CALIDAD QA */}
       {activeTab === 'CALIDAD' && (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-100">
+        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-6">
+          <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900">
               Inspección Organoléptica QA
             </h3>
             {(currentRole === 'ADMINISTRADOR' || currentRole === 'QA') && (
@@ -263,34 +263,34 @@ export const LotDetailPage: React.FC<LotDetailPageProps> = ({ lotId, onNavigate 
           {lot.qa ? (
             <div className="space-y-4">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
-                <div className="p-3 bg-slate-950 rounded-lg border border-slate-800">
-                  <span className="text-slate-400 block font-semibold">Apariencia</span>
-                  <span className="text-slate-100 font-bold text-sm mt-0.5 block">{lot.qa.appearance}</span>
+                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                  <span className="text-slate-500 block font-semibold">Apariencia</span>
+                  <span className="text-slate-900 font-bold text-sm mt-0.5 block">{lot.qa.appearance}</span>
                 </div>
-                <div className="p-3 bg-slate-950 rounded-lg border border-slate-800">
-                  <span className="text-slate-400 block font-semibold">Coloración</span>
-                  <span className="text-slate-100 font-bold text-sm mt-0.5 block">{lot.qa.color}</span>
+                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                  <span className="text-slate-500 block font-semibold">Coloración</span>
+                  <span className="text-slate-900 font-bold text-sm mt-0.5 block">{lot.qa.color}</span>
                 </div>
-                <div className="p-3 bg-slate-950 rounded-lg border border-slate-800">
-                  <span className="text-slate-400 block font-semibold">Textura Muscular</span>
-                  <span className="text-slate-100 font-bold text-sm mt-0.5 block">{lot.qa.texture}</span>
+                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                  <span className="text-slate-500 block font-semibold">Textura Muscular</span>
+                  <span className="text-slate-900 font-bold text-sm mt-0.5 block">{lot.qa.texture}</span>
                 </div>
-                <div className="p-3 bg-slate-950 rounded-lg border border-slate-800">
-                  <span className="text-slate-400 block font-semibold">Ausencia de Parásitos</span>
-                  <span className="text-emerald-400 font-bold text-sm mt-0.5 block">{lot.qa.parasiteCheck}</span>
+                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                  <span className="text-slate-500 block font-semibold">Ausencia de Parásitos</span>
+                  <span className="text-emerald-600 font-bold text-sm mt-0.5 block">{lot.qa.parasiteCheck}</span>
                 </div>
               </div>
 
               {lot.qa.evidenceUrls && lot.qa.evidenceUrls.length > 0 && (
                 <div className="space-y-2">
-                  <span className="text-xs font-semibold text-slate-300">Evidencias Fotográficas Adjuntas:</span>
+                  <span className="text-xs font-semibold text-slate-700">Evidencias Fotográficas Adjuntas:</span>
                   <div className="flex items-center gap-3">
                     {lot.qa.evidenceUrls.map((url, i) => (
                       <img
                         key={i}
                         src={url}
                         alt="QA Evidence"
-                        className="w-28 h-20 object-cover rounded-lg border border-slate-700 shadow-md"
+                        className="w-28 h-20 object-cover rounded-lg border border-slate-200 shadow-sm"
                       />
                     ))}
                   </div>
@@ -298,7 +298,7 @@ export const LotDetailPage: React.FC<LotDetailPageProps> = ({ lotId, onNavigate 
               )}
             </div>
           ) : (
-            <p className="text-xs text-amber-400 italic">Inspección organoléptica aún no realizada.</p>
+            <p className="text-xs text-amber-600 italic">Inspección organoléptica aún no realizada.</p>
           )}
         </div>
       )}
@@ -310,26 +310,26 @@ export const LotDetailPage: React.FC<LotDetailPageProps> = ({ lotId, onNavigate 
 
           {/* Manual Temperature Entry Form */}
           {(currentRole === 'ADMINISTRADOR' || currentRole === 'QA') && (
-            <form onSubmit={handleAddTempLog} className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-4">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-teal-400">
+            <form onSubmit={handleAddTempLog} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-[#0F6CBD]">
                 + Registro Manual de Temperatura (°C)
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Temperatura °C (Target ≤ -18°C)</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Temperatura °C (Target ≤ -18°C)</label>
                   <input
                     type="number"
                     step="0.1"
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100"
+                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0F6CBD]/20 focus:border-[#0F6CBD]"
                     value={tempVal}
                     onChange={(e) => setTempVal(Number(e.target.value))}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Ubicación / Cámara</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Ubicación / Cámara</label>
                   <input
                     type="text"
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100"
+                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0F6CBD]/20 focus:border-[#0F6CBD]"
                     value={tempLoc}
                     onChange={(e) => setTempLoc(e.target.value)}
                   />
@@ -347,17 +347,17 @@ export const LotDetailPage: React.FC<LotDetailPageProps> = ({ lotId, onNavigate 
 
       {/* TAB CONTENT: 5. DOCUMENTOS */}
       {activeTab === 'DOCUMENTOS' && (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl space-y-4">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-100 border-b border-slate-800 pb-3">
+        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-3">
             Expediente Documental del Lote
           </h3>
-          <div className="divide-y divide-slate-800">
+          <div className="divide-y divide-slate-100">
             {lot.documents.map((doc) => (
               <div key={doc.id} className="py-3 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-3">
-                  <FileText className="w-5 h-5 text-teal-400" />
+                  <FileText className="w-5 h-5 text-[#0F6CBD]" />
                   <div>
-                    <span className="font-semibold text-slate-200 block">{doc.name}</span>
+                    <span className="font-semibold text-slate-800 block">{doc.name}</span>
                     <span className="text-[10px] text-slate-500">
                       Subido por {doc.uploadedBy} el {new Date(doc.uploadedAt).toLocaleDateString()} ({doc.size})
                     </span>
@@ -377,7 +377,7 @@ export const LotDetailPage: React.FC<LotDetailPageProps> = ({ lotId, onNavigate 
         <div className="space-y-6">
           <ExpedienteDigitalView lot={lot} certificate={certificate} />
           {!certificate && (currentRole === 'ADMINISTRADOR' || currentRole === 'LOGISTICA') && (
-            <div className="text-center p-6 bg-slate-900 border border-slate-800 rounded-xl">
+            <div className="text-center p-6 bg-white border border-slate-200 rounded-xl shadow-sm">
               <Button variant="teal" size="lg" onClick={handleStartCert} icon={<Award className="w-5 h-5" />}>
                 Iniciar Trámite de Certificación SANIPES
               </Button>
@@ -392,6 +392,7 @@ export const LotDetailPage: React.FC<LotDetailPageProps> = ({ lotId, onNavigate 
         onClose={() => setQrModalOpen(false)}
         lotCode={lot.code}
         productName={lot.production.productName}
+        qrToken={lot.qrToken}
       />
     </div>
   );

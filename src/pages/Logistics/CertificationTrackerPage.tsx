@@ -67,9 +67,9 @@ export const CertificationTrackerPage: React.FC<CertificationTrackerPageProps> =
       />
 
       {/* Lot selector */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-lg flex items-center justify-between gap-4">
+      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 w-full md:w-96">
-          <Award className="w-5 h-5 text-teal-400 shrink-0" />
+          <Award className="w-5 h-5 text-[#0F6CBD] shrink-0" />
           <Select
             label="Seleccionar Lote para Gestión Sanitaria"
             value={selectedLotId}
@@ -109,25 +109,25 @@ export const CertificationTrackerPage: React.FC<CertificationTrackerPageProps> =
       {selectedLot && (
         <div className="space-y-6">
           {/* Prerequisites Checklist */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-3">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
               Checklist Previo a Solicitud de Certificado Sanitario
             </h4>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs font-semibold">
-              <div className="p-2.5 bg-emerald-950/40 border border-emerald-800 text-emerald-300 rounded-lg flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Producción ✓
+              <div className="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Producción ✓
               </div>
-              <div className="p-2.5 bg-emerald-950/40 border border-emerald-800 text-emerald-300 rounded-lg flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" /> QA Conforme ✓
+              <div className="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" /> QA Conforme ✓
               </div>
-              <div className="p-2.5 bg-emerald-950/40 border border-emerald-800 text-emerald-300 rounded-lg flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Cadena Frío ✓
+              <div className="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Cadena Frío ✓
               </div>
-              <div className="p-2.5 bg-emerald-950/40 border border-emerald-800 text-emerald-300 rounded-lg flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Documentación ✓
+              <div className="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Documentación ✓
               </div>
-              <div className="p-2.5 bg-emerald-950/40 border border-emerald-800 text-emerald-300 rounded-lg flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Validación ✓
+              <div className="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Validación ✓
               </div>
             </div>
           </div>

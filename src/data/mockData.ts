@@ -59,6 +59,7 @@ export const MOCK_LOTS: Lot[] = [
   {
     id: 'lot-001',
     code: 'EXP-2026-001',
+    qrToken: 'EXP2026001HASH98412089421',
     status: 'READY_FOR_DISPATCH',
     createdAt: '2026-08-20T08:30:00Z',
     updatedAt: '2026-08-30T14:15:00Z',
@@ -208,6 +209,7 @@ export const MOCK_LOTS: Lot[] = [
   {
     id: 'lot-002',
     code: 'EXP-2026-002',
+    qrToken: 'EXP2026002HASH49102830192',
     status: 'IN_CERTIFICATION',
     createdAt: '2026-08-24T09:00:00Z',
     updatedAt: '2026-08-29T11:20:00Z',
@@ -306,6 +308,7 @@ export const MOCK_LOTS: Lot[] = [
   {
     id: 'lot-003',
     code: 'EXP-2026-003',
+    qrToken: 'EXP2026003HASH77410294821',
     status: 'VALIDATION_PENDING',
     createdAt: '2026-08-27T10:15:00Z',
     updatedAt: '2026-08-29T15:00:00Z',
@@ -372,6 +375,7 @@ export const MOCK_LOTS: Lot[] = [
   {
     id: 'lot-004',
     code: 'EXP-2026-004',
+    qrToken: 'EXP2026004HASH33190842019',
     status: 'OBSERVED',
     createdAt: '2026-08-26T14:00:00Z',
     updatedAt: '2026-08-29T18:30:00Z',
@@ -453,6 +457,7 @@ export const MOCK_LOTS: Lot[] = [
   {
     id: 'lot-005',
     code: 'EXP-2026-005',
+    qrToken: 'EXP2026005HASH88192039481',
     status: 'IN_QA',
     createdAt: '2026-08-29T08:00:00Z',
     updatedAt: '2026-08-29T08:00:00Z',

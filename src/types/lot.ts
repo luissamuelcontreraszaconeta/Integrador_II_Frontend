@@ -92,6 +92,7 @@ export interface LotDocument {
 export interface Lot {
   id: string;
   code: string; // e.g., EXP-2026-001
+  qrToken?: string;
   status: LotStatus;
   createdAt: string;
   updatedAt: string;

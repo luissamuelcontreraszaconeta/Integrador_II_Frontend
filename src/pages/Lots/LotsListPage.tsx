@@ -43,13 +43,13 @@ export const LotsListPage: React.FC<LotsListPageProps> = ({ onNavigate }) => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => onNavigate(`/lots/${item.id}`)}
-            className="font-bold text-teal-400 hover:underline cursor-pointer"
+            className="font-bold text-[#0F6CBD] hover:underline cursor-pointer"
           >
             {item.code}
           </button>
           <button
             onClick={() => setSelectedQrLot(item)}
-            className="p-1 rounded text-slate-400 hover:text-teal-300 hover:bg-slate-800 transition-colors"
+            className="p-1 rounded text-slate-400 hover:text-[#0F6CBD] hover:bg-slate-100 transition-colors"
             title="Ver Código QR"
           >
             <QrCode className="w-3.5 h-3.5" />
@@ -61,15 +61,15 @@ export const LotsListPage: React.FC<LotsListPageProps> = ({ onNavigate }) => {
       header: 'Producto / Especie',
       cell: (item) => (
         <div>
-          <span className="font-semibold text-slate-100 block text-xs">{item.production.productName}</span>
-          <span className="text-[10px] text-slate-400 italic">{item.production.scientificName}</span>
+          <span className="font-semibold text-slate-800 block text-xs">{item.production.productName}</span>
+          <span className="text-[10px] text-slate-500 italic">{item.production.scientificName}</span>
         </div>
       ),
     },
     {
       header: 'Fecha Registro',
       cell: (item) => (
-        <span className="text-xs text-slate-300">
+        <span className="text-xs text-slate-600">
           {new Date(item.createdAt).toLocaleDateString()}
         </span>
       ),
@@ -77,7 +77,7 @@ export const LotsListPage: React.FC<LotsListPageProps> = ({ onNavigate }) => {
     {
       header: 'Volumen',
       cell: (item) => (
-        <span className="font-mono font-bold text-slate-200 text-xs">
+        <span className="font-mono font-bold text-slate-800 text-xs">
           {item.production.quantity} {item.production.unit}
         </span>
       ),
@@ -89,7 +89,7 @@ export const LotsListPage: React.FC<LotsListPageProps> = ({ onNavigate }) => {
     {
       header: 'Responsable',
       cell: (item) => (
-        <span className="text-xs text-slate-400">{item.createdBy}</span>
+        <span className="text-xs text-slate-500">{item.createdBy}</span>
       ),
     },
     {
@@ -140,7 +140,7 @@ export const LotsListPage: React.FC<LotsListPageProps> = ({ onNavigate }) => {
       />
 
       {/* Filter and Search Bar */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-lg flex flex-col md:flex-row gap-4 items-center justify-between">
+      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
         <div className="w-full md:w-80">
           <Input
             placeholder="Buscar por código, producto, embarcación..."

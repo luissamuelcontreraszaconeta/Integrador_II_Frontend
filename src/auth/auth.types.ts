@@ -1,4 +1,5 @@
 export type UserRole =
+  | 'SUPERADMIN'
   | 'ADMINISTRADOR'
   | 'PRODUCCION'
   | 'QA'
@@ -12,6 +13,8 @@ export interface AuthUser {
   role: UserRole;
   area?: string;
   avatar?: string;
+  status?: string;
+  permissions?: string[];
 }
 
 export interface LoginRequest {

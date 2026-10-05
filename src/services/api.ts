@@ -63,9 +63,13 @@ export const apiService = {
     const code = `EXP-2026-${codeNumber}`;
     const now = new Date().toISOString();
 
+    const randomHash = Math.random().toString(36).substring(2, 10).toUpperCase();
+    const qrToken = `EXP2026${codeNumber}${randomHash}`;
+
     const newLot: Lot = {
       id: `lot-${Date.now()}`,
       code,
+      qrToken,
       status: 'PENDING_QA',
       createdAt: now,
       updatedAt: now,

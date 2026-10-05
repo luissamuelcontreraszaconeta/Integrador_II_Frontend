@@ -148,3 +148,42 @@ npm run dev
 ```
 
 El cliente estará disponible en: **`http://localhost:5173/`**
+
+---
+
+## 🐳 8. Contenerización con Docker y Despliegue en Render
+
+El frontend incluye un `Dockerfile` multi-etapa optimizado con servidor web **Nginx Alpine** y enrutamiento SPA.
+
+### 8.1 Construcción y Ejecución con Docker Local
+
+```bash
+# 1. Construir la imagen Docker
+docker build -t exportrace-frontend --build-arg VITE_API_BASE_URL=http://localhost:8080/api .
+
+# 2. Ejecutar el contenedor en el puerto 80 (o 3000)
+docker run -p 3000:80 exportrace-frontend
+```
+
+### 8.2 Despliegue en Render
+
+1. **Como Static Site**:
+   - Build Command: `npm install && npm run build`
+   - Publish Directory: `dist`
+   - Variables de entorno:
+     - `VITE_API_BASE_URL=https://tu-backend.onrender.com/api`
+     - `VITE_PUBLIC_APP_URL=https://tu-frontend.onrender.com`
+   - Redirect / Rewrite: `/*` -> `/index.html` (Rewrite 200).
+2. **Como Web Service (Docker)**:
+   - Render construirá la imagen automáticamente usando `Dockerfile` y `nginx.conf`.
+
+---
+
+## 📱 11. Módulo de Verificación Pública QR
+
+El frontend implementa códigos QR reales mediante `qrcode.react` (`QRCodeSVG`, nivel de corrección H y quiet zone de 2 módulos):
+- **Componentes**: `TraceabilityQRCode.tsx` y `QRCodeModal.tsx`.
+- **Ruta Pública**: `/verificar/:token` (implementada en `PublicTraceabilityPage.tsx`), accesible sin necesidad de autenticación previa.
+- **Vista Imprimible**: En `ExpedienteDigitalView.tsx`, el QR generado se preserva nítidamente al imprimir o exportar a PDF para auditorías o etiquetas de despacho.
+
+

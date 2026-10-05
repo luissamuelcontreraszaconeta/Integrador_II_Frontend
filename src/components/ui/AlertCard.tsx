@@ -18,20 +18,28 @@ export const AlertCard: React.FC<AlertCardProps> = ({
 }) => {
   const typeConfigs = {
     success: {
-      bg: 'bg-emerald-950/40 border-emerald-800/60 text-emerald-200',
-      icon: <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />,
+      bg: 'bg-emerald-50 border-emerald-200 text-emerald-900',
+      titleColor: 'text-emerald-900',
+      messageColor: 'text-emerald-800',
+      icon: <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />,
     },
     warning: {
-      bg: 'bg-amber-950/40 border-amber-800/60 text-amber-200',
-      icon: <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0" />,
+      bg: 'bg-amber-50 border-amber-200 text-amber-900',
+      titleColor: 'text-amber-900',
+      messageColor: 'text-amber-800',
+      icon: <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />,
     },
     error: {
-      bg: 'bg-rose-950/40 border-rose-800/60 text-rose-200',
-      icon: <XCircle className="w-5 h-5 text-rose-400 shrink-0" />,
+      bg: 'bg-rose-50 border-rose-200 text-rose-900',
+      titleColor: 'text-rose-900',
+      messageColor: 'text-rose-800',
+      icon: <XCircle className="w-5 h-5 text-rose-600 shrink-0" />,
     },
     info: {
-      bg: 'bg-sky-950/40 border-sky-800/60 text-sky-200',
-      icon: <Info className="w-5 h-5 text-sky-400 shrink-0" />,
+      bg: 'bg-sky-50 border-sky-200 text-sky-900',
+      titleColor: 'text-sky-900',
+      messageColor: 'text-sky-800',
+      icon: <Info className="w-5 h-5 text-sky-600 shrink-0" />,
     },
   };
 
@@ -40,9 +48,9 @@ export const AlertCard: React.FC<AlertCardProps> = ({
   return (
     <div className={`flex items-start gap-3.5 p-4 rounded-xl border ${config.bg} ${className}`}>
       {config.icon}
-      <div className="flex-1 text-sm">
-        {title && <h4 className="font-semibold text-slate-100 mb-0.5">{title}</h4>}
-        <p className="text-slate-300 leading-relaxed text-xs sm:text-sm">{message}</p>
+      <div className="flex-1 text-sm text-left">
+        {title && <h4 className={`font-bold ${config.titleColor} mb-0.5`}>{title}</h4>}
+        <p className={`${config.messageColor} leading-relaxed text-xs sm:text-sm`}>{message}</p>
       </div>
       {action && <div className="shrink-0">{action}</div>}
     </div>

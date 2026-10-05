@@ -70,30 +70,30 @@ export const DispatchPage: React.FC<DispatchPageProps> = ({ lotId, onNavigate })
       />
 
       {/* Strict Gatekeeping Matrix */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl space-y-4">
-        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-100 border-b border-slate-800 pb-3">
+      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
+        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-3">
           Verificación de Requisitos Obligatorios para Embarque
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs">
-          <div className={`p-3 rounded-lg border flex items-center justify-between ${isProdComplete ? 'bg-emerald-950/40 border-emerald-800 text-emerald-300' : 'bg-rose-950/40 border-rose-800 text-rose-300'}`}>
+          <div className={`p-3 rounded-lg border flex items-center justify-between ${isProdComplete ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-rose-50 border-rose-200 text-rose-700'}`}>
             <span>Producción Completa</span>
-            {isProdComplete ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Lock className="w-4 h-4" />}
+            {isProdComplete ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <Lock className="w-4 h-4" />}
           </div>
-          <div className={`p-3 rounded-lg border flex items-center justify-between ${isQAConforme ? 'bg-emerald-950/40 border-emerald-800 text-emerald-300' : 'bg-rose-950/40 border-rose-800 text-rose-300'}`}>
+          <div className={`p-3 rounded-lg border flex items-center justify-between ${isQAConforme ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-rose-50 border-rose-200 text-rose-700'}`}>
             <span>QA Conforme</span>
-            {isQAConforme ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Lock className="w-4 h-4" />}
+            {isQAConforme ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <Lock className="w-4 h-4" />}
           </div>
-          <div className={`p-3 rounded-lg border flex items-center justify-between ${isColdChainConforme ? 'bg-emerald-950/40 border-emerald-800 text-emerald-300' : 'bg-rose-950/40 border-rose-800 text-rose-300'}`}>
+          <div className={`p-3 rounded-lg border flex items-center justify-between ${isColdChainConforme ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-rose-50 border-rose-200 text-rose-700'}`}>
             <span>Cadena Frío OK</span>
-            {isColdChainConforme ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Lock className="w-4 h-4" />}
+            {isColdChainConforme ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <Lock className="w-4 h-4" />}
           </div>
-          <div className={`p-3 rounded-lg border flex items-center justify-between ${isDocsComplete ? 'bg-emerald-950/40 border-emerald-800 text-emerald-300' : 'bg-rose-950/40 border-rose-800 text-rose-300'}`}>
+          <div className={`p-3 rounded-lg border flex items-center justify-between ${isDocsComplete ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-rose-50 border-rose-200 text-rose-700'}`}>
             <span>Docs Completos</span>
-            {isDocsComplete ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Lock className="w-4 h-4" />}
+            {isDocsComplete ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <Lock className="w-4 h-4" />}
           </div>
-          <div className={`p-3 rounded-lg border flex items-center justify-between ${isCertApproved ? 'bg-emerald-950/40 border-emerald-800 text-emerald-300' : 'bg-rose-950/40 border-rose-800 text-rose-300'}`}>
+          <div className={`p-3 rounded-lg border flex items-center justify-between ${isCertApproved ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-rose-50 border-rose-200 text-rose-700'}`}>
             <span>Certificado SANIPES</span>
-            {isCertApproved ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Lock className="w-4 h-4" />}
+            {isCertApproved ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <Lock className="w-4 h-4" />}
           </div>
         </div>
 
@@ -114,10 +114,10 @@ export const DispatchPage: React.FC<DispatchPageProps> = ({ lotId, onNavigate })
 
       {/* Dispatch Authorization Form */}
       {isEligible && (
-        <form onSubmit={handleSubmit} className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl space-y-6">
-          <div className="flex items-center gap-2.5 border-b border-slate-800 pb-3">
-            <Truck className="w-5 h-5 text-teal-400" />
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-100">
+        <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-6">
+          <div className="flex items-center gap-2.5 border-b border-slate-200 pb-3">
+            <Truck className="w-5 h-5 text-[#0F6CBD]" />
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900">
               Manifiesto de Salida y Embarque Contenedor
             </h3>
           </div>
@@ -162,7 +162,7 @@ export const DispatchPage: React.FC<DispatchPageProps> = ({ lotId, onNavigate })
             />
           </div>
 
-          <div className="flex items-center justify-end pt-4 border-t border-slate-800">
+          <div className="flex items-center justify-end pt-4 border-t border-slate-200">
             <Button
               variant="teal"
               size="lg"

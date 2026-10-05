@@ -24,104 +24,98 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md', s
       case 'DRAFT':
         return {
           label: 'Borrador',
-          bg: 'bg-slate-800/90 text-slate-300 border-slate-700',
-          dot: 'bg-slate-400',
-          icon: <FileText className="w-3.5 h-3.5" />,
+          bg: 'bg-slate-100 text-slate-700 border-slate-300',
+          dot: 'bg-slate-500',
+          icon: <FileText className="w-3.5 h-3.5 text-slate-600" />,
         };
       case 'PENDING_QA':
         return {
           label: 'Pendiente QA',
-          bg: 'bg-amber-950/60 text-amber-300 border-amber-800/60',
-          dot: 'bg-amber-400',
-          icon: <Clock className="w-3.5 h-3.5" />,
+          bg: 'bg-amber-50 text-amber-800 border-amber-300',
+          dot: 'bg-amber-500',
+          icon: <Clock className="w-3.5 h-3.5 text-amber-600" />,
         };
       case 'IN_QA':
         return {
           label: 'En Control QA',
-          bg: 'bg-sky-950/70 text-sky-300 border-sky-800/60',
-          dot: 'bg-sky-400 animate-pulse',
-          icon: <ShieldCheck className="w-3.5 h-3.5" />,
+          bg: 'bg-sky-50 text-sky-800 border-sky-300',
+          dot: 'bg-sky-500 animate-pulse',
+          icon: <ShieldCheck className="w-3.5 h-3.5 text-sky-600" />,
         };
       case 'OBSERVED':
         return {
           label: 'Observado',
-          bg: 'bg-rose-950/80 text-rose-300 border-rose-800/80',
+          bg: 'bg-rose-50 text-rose-800 border-rose-300',
           dot: 'bg-rose-500',
-          icon: <AlertTriangle className="w-3.5 h-3.5" />,
+          icon: <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />,
         };
       case 'VALIDATION_PENDING':
         return {
           label: 'Pendiente Validación',
-          bg: 'bg-indigo-950/70 text-indigo-300 border-indigo-800/60',
-          dot: 'bg-indigo-400',
-          icon: <FileCheck className="w-3.5 h-3.5" />,
+          bg: 'bg-indigo-50 text-indigo-800 border-indigo-300',
+          dot: 'bg-indigo-500',
+          icon: <FileCheck className="w-3.5 h-3.5 text-indigo-600" />,
         };
       case 'READY_FOR_CERTIFICATION':
         return {
-          label: 'Apto Certificación',
-          bg: 'bg-teal-950/80 text-teal-300 border-teal-800/80',
-          dot: 'bg-teal-400',
-          icon: <Award className="w-3.5 h-3.5" />,
+          label: 'Listo p/ Certificar',
+          bg: 'bg-blue-50 text-blue-800 border-blue-300',
+          dot: 'bg-blue-500',
+          icon: <Award className="w-3.5 h-3.5 text-blue-600" />,
         };
       case 'IN_CERTIFICATION':
         return {
-          label: 'Certificación En Trámite',
-          bg: 'bg-blue-950/80 text-blue-300 border-blue-800/80',
-          dot: 'bg-blue-400 animate-pulse',
-          icon: <Clock className="w-3.5 h-3.5" />,
-        };
-      case 'CERTIFICATION_OBSERVED':
-        return {
-          label: 'Certificación Observada',
-          bg: 'bg-purple-950/80 text-purple-300 border-purple-800/80',
-          dot: 'bg-purple-400',
-          icon: <RotateCcw className="w-3.5 h-3.5" />,
+          label: 'En SANIPES',
+          bg: 'bg-purple-50 text-purple-800 border-purple-300',
+          dot: 'bg-purple-500 animate-pulse',
+          icon: <RotateCcw className="w-3.5 h-3.5 text-purple-600" />,
         };
       case 'CERTIFIED':
         return {
           label: 'Certificado SANIPES',
-          bg: 'bg-emerald-950/80 text-emerald-300 border-emerald-800/80',
-          dot: 'bg-emerald-400',
-          icon: <CheckCircle2 className="w-3.5 h-3.5" />,
+          bg: 'bg-emerald-50 text-emerald-800 border-emerald-300',
+          dot: 'bg-emerald-500',
+          icon: <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />,
         };
       case 'READY_FOR_DISPATCH':
         return {
           label: 'Apto para Despacho',
-          bg: 'bg-emerald-900/90 text-emerald-200 border-emerald-700 shadow-sm shadow-emerald-950',
-          dot: 'bg-emerald-400',
-          icon: <CheckCircle2 className="w-3.5 h-3.5" />,
+          bg: 'bg-teal-50 text-teal-800 border-teal-300',
+          dot: 'bg-teal-500',
+          icon: <Truck className="w-3.5 h-3.5 text-teal-600" />,
         };
       case 'DISPATCHED':
         return {
-          label: 'Despachado',
-          bg: 'bg-slate-900 text-teal-400 border-teal-800/60',
-          dot: 'bg-teal-500',
-          icon: <Truck className="w-3.5 h-3.5" />,
+          label: 'Despachado / Exportado',
+          bg: 'bg-emerald-100 text-emerald-950 border-emerald-400 font-bold',
+          dot: 'bg-emerald-600',
+          icon: <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />,
         };
       default:
         return {
-          label: status,
-          bg: 'bg-slate-800 text-slate-300 border-slate-700',
-          dot: 'bg-slate-400',
-          icon: <FileText className="w-3.5 h-3.5" />,
+          label: st,
+          bg: 'bg-slate-100 text-slate-700 border-slate-300',
+          dot: 'bg-slate-500',
+          icon: <FileText className="w-3.5 h-3.5 text-slate-600" />,
         };
     }
   };
 
-  const config = getStatusConfig(status);
-
   const sizeClasses = {
-    sm: 'px-2 py-0.5 text-xs gap-1',
-    md: 'px-2.5 py-1 text-xs gap-1.5 font-medium',
-    lg: 'px-3 py-1.5 text-sm gap-2 font-semibold',
+    sm: 'px-2 py-0.5 text-[11px] gap-1',
+    md: 'px-2.5 py-1 text-xs gap-1.5',
+    lg: 'px-3 py-1.5 text-sm gap-2',
   };
+
+  const config = getStatusConfig(status);
 
   return (
     <span
-      className={`inline-flex items-center rounded-full border ${config.bg} ${sizeClasses[size]} shrink-0 transition-colors`}
+      className={`inline-flex items-center font-semibold rounded-full border shadow-2xs ${config.bg} ${sizeClasses[size]}`}
     >
-      {showIcon ? config.icon : <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />}
+      {showIcon && config.icon}
       <span>{config.label}</span>
+      <span className={`w-1.5 h-1.5 rounded-full ${config.dot} shrink-0`} />
     </span>
   );
 };

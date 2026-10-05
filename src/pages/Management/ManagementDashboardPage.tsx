@@ -44,10 +44,10 @@ export const ManagementDashboardPage: React.FC<ManagementDashboardPageProps> = (
   const dispatchedCount = lots.filter((l) => l.status === 'DISPATCHED').length;
 
   const pieData = [
-    { name: 'Certificados / Aptos', value: conformes, color: '#10b981' },
-    { name: 'En Trámite SANIPES', value: lots.filter((l) => l.status === 'IN_CERTIFICATION').length, color: '#0284c7' },
-    { name: 'En Control QA', value: lots.filter((l) => l.status === 'IN_QA' || l.status === 'PENDING_QA').length, color: '#f59e0b' },
-    { name: 'Observados', value: observadosCount, color: '#f43f5e' },
+    { name: 'Certificados / Aptos', value: conformes, color: '#0F9D8A' },
+    { name: 'En Trámite SANIPES', value: lots.filter((l) => l.status === 'IN_CERTIFICATION').length, color: '#0F6CBD' },
+    { name: 'En Control QA', value: lots.filter((l) => l.status === 'IN_QA' || l.status === 'PENDING_QA').length, color: '#EAA300' },
+    { name: 'Observados', value: observadosCount, color: '#D83B01' },
   ];
 
   const trendData = [
@@ -116,9 +116,9 @@ export const ManagementDashboardPage: React.FC<ManagementDashboardPageProps> = (
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left: Lot Status Pie Chart */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-4">
-          <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+          <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-[#0F9D8A]" />
             Distribución General por Estado del Lote
           </h3>
           <div className="h-64 w-full">
@@ -137,7 +137,7 @@ export const ManagementDashboardPage: React.FC<ManagementDashboardPageProps> = (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <RechartsTooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px' }} />
+                <RechartsTooltip contentStyle={{ backgroundColor: '#FFFFFF', borderColor: '#E2E8F0', color: '#1E293B', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
@@ -145,19 +145,19 @@ export const ManagementDashboardPage: React.FC<ManagementDashboardPageProps> = (
         </div>
 
         {/* Right: Monthly Trend Chart */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-4">
-          <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-teal-400" />
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+          <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-[#0F6CBD]" />
             Tendencia Mensual de Volumen Exportado (TN)
           </h3>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                <XAxis dataKey="mes" stroke="#64748b" fontSize={11} />
-                <YAxis stroke="#64748b" fontSize={11} />
-                <RechartsTooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px' }} />
-                <Line type="monotone" dataKey="Toneladas" stroke="#14b8a6" strokeWidth={3} dot={{ r: 5 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                <XAxis dataKey="mes" stroke="#64748B" fontSize={11} />
+                <YAxis stroke="#64748B" fontSize={11} />
+                <RechartsTooltip contentStyle={{ backgroundColor: '#FFFFFF', borderColor: '#E2E8F0', color: '#1E293B', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                <Line type="monotone" dataKey="Toneladas" stroke="#0F6CBD" strokeWidth={3} dot={{ r: 5 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -165,26 +165,26 @@ export const ManagementDashboardPage: React.FC<ManagementDashboardPageProps> = (
       </div>
 
       {/* Bottleneck Analysis Table */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg space-y-4">
-        <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-amber-400" />
+      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
+        <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 text-amber-500" />
           Principales Causas de Observaciones en Proceso
         </h3>
         <div className="overflow-x-auto">
-          <table className="w-full text-xs text-left text-slate-300">
-            <thead className="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
+          <table className="w-full text-xs text-left text-slate-700">
+            <thead className="bg-slate-50 text-slate-600 uppercase font-semibold border-b border-slate-200">
               <tr>
                 <th className="p-3">Causa / Tipo de Observación</th>
                 <th className="p-3">Impacto en Lotes</th>
                 <th className="p-3">Acción Correctiva Sugerida</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-slate-100">
               {observationsBreakdown.map((item, i) => (
-                <tr key={i}>
-                  <td className="p-3 font-semibold text-slate-200">{item.causa}</td>
-                  <td className="p-3 font-bold text-amber-400 font-mono">{item.cantidad} lotes</td>
-                  <td className="p-3 text-slate-400">Calibración de túneles de congelación y auditoría de DJ previa.</td>
+                <tr key={i} className="hover:bg-slate-50/70">
+                  <td className="p-3 font-semibold text-slate-800">{item.causa}</td>
+                  <td className="p-3 font-bold text-amber-600 font-mono">{item.cantidad} lotes</td>
+                  <td className="p-3 text-slate-500">Calibración de túneles de congelación y auditoría de DJ previa.</td>
                 </tr>
               ))}
             </tbody>

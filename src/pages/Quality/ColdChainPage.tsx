@@ -47,9 +47,9 @@ export const ColdChainPage: React.FC<ColdChainPageProps> = ({ onNavigate }) => {
       />
 
       {/* Lot selector bar */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-lg flex items-center justify-between gap-4">
+      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 w-full md:w-96">
-          <Thermometer className="w-5 h-5 text-cyan-400 shrink-0" />
+          <Thermometer className="w-5 h-5 text-[#0F6CBD] shrink-0" />
           <Select
             label="Seleccionar Lote para Auditoría Térmica"
             value={selectedLotId}
@@ -72,11 +72,11 @@ export const ColdChainPage: React.FC<ColdChainPageProps> = ({ onNavigate }) => {
             {/* Left: Manual Log Form */}
             <form
               onSubmit={handleAddLog}
-              className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl space-y-4"
+              className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4"
             >
-              <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
-                <Plus className="w-4 h-4 text-teal-400" />
-                <h4 className="text-sm font-bold uppercase tracking-wider text-slate-100">
+              <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
+                <Plus className="w-4 h-4 text-[#0F6CBD]" />
+                <h4 className="text-sm font-bold uppercase tracking-wider text-slate-900">
                   Nuevo Registro Manual de T°
                 </h4>
               </div>
@@ -106,11 +106,11 @@ export const ColdChainPage: React.FC<ColdChainPageProps> = ({ onNavigate }) => {
               />
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">
                   Observaciones
                 </label>
                 <textarea
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0F6CBD]/20 focus:border-[#0F6CBD]"
                   rows={2}
                   value={obs}
                   onChange={(e) => setObs(e.target.value)}
@@ -130,17 +130,17 @@ export const ColdChainPage: React.FC<ColdChainPageProps> = ({ onNavigate }) => {
             </form>
 
             {/* Right: Detailed Logs Table */}
-            <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl space-y-4">
-              <h4 className="text-sm font-bold uppercase tracking-wider text-slate-100 border-b border-slate-800 pb-3">
+            <div className="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
+              <h4 className="text-sm font-bold uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-3">
                 Historial de Lecturas Registradas ({selectedLot.code})
               </h4>
 
               {selectedLot.coldChainLogs.length === 0 ? (
-                <p className="text-xs text-slate-400 py-6 text-center">Sin registros manuales para este lote.</p>
+                <p className="text-xs text-slate-500 py-6 text-center">Sin registros manuales para este lote.</p>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left text-slate-300">
-                    <thead className="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
+                  <table className="w-full text-xs text-left text-slate-700">
+                    <thead className="bg-slate-50 text-slate-600 uppercase font-semibold border-b border-slate-200">
                       <tr>
                         <th className="p-3">Fecha y Hora</th>
                         <th className="p-3">T° Leída</th>
@@ -149,21 +149,21 @@ export const ColdChainPage: React.FC<ColdChainPageProps> = ({ onNavigate }) => {
                         <th className="p-3">Estado</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-800">
+                    <tbody className="divide-y divide-slate-100">
                       {selectedLot.coldChainLogs.map((log) => (
-                        <tr key={log.id}>
+                        <tr key={log.id} className="hover:bg-slate-50/70">
                           <td className="p-3 font-mono">{new Date(log.recordedAt).toLocaleDateString()} {log.time}</td>
-                          <td className="p-3 font-bold font-mono text-cyan-300 text-sm">{log.temperature}°C</td>
+                          <td className="p-3 font-bold font-mono text-[#0F6CBD] text-sm">{log.temperature}°C</td>
                           <td className="p-3">{log.location}</td>
                           <td className="p-3">{log.responsible}</td>
                           <td className="p-3">
                             <span
                               className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                                 log.status === 'NORMAL'
-                                  ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                   : log.status === 'WARNING'
-                                  ? 'bg-amber-950 text-amber-300 border border-amber-800'
-                                  : 'bg-rose-950 text-rose-300 border border-rose-800'
+                                  ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                  : 'bg-rose-50 text-rose-700 border border-rose-200'
                               }`}
                             >
                               {log.status}

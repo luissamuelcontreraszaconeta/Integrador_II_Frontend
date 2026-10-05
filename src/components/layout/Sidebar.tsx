@@ -13,12 +13,18 @@ import {
   Truck, 
   BarChart3, 
   Sliders, 
-  History 
+  ShieldAlert,
+  Users,
+  Layers,
+  History,
+  X
 } from 'lucide-react';
 
 interface SidebarProps {
   currentPath: string;
   onNavigate: (path: string) => void;
+  isOpenMobile?: boolean;
+  onCloseMobile?: () => void;
 }
 
 interface NavItem {
@@ -27,157 +33,283 @@ interface NavItem {
   label: string;
   icon: React.ReactNode;
   roles: UserRole[];
+  requiredPermission?: string;
   badge?: string;
+  section?: string;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => {
+export const Sidebar: React.FC<SidebarProps> = ({
+  currentPath,
+  onNavigate,
+  isOpenMobile = false,
+  onCloseMobile,
+}) => {
   const { currentRole, currentUser } = useAuth();
 
   const dashboardLanding = currentRole ? authService.getInitialRouteByRole(currentRole) : '/dashboard';
+
+  const userPerms = currentUser?.permissions || [];
 
   const navItems: NavItem[] = [
     {
       id: 'dashboard',
       path: dashboardLanding,
       label: 'Dashboard Principal',
-      icon: <LayoutDashboard className="w-4 h-4" />,
+      icon: <LayoutDashboard className="w-4 h-4 shrink-0" />,
       roles: ['ADMINISTRADOR', 'PRODUCCION', 'QA', 'LOGISTICA', 'GERENCIA'],
+      section: 'PANEL PRINCIPAL',
     },
     {
       id: 'lots',
       path: '/lots',
       label: 'Gestión de Lotes',
-      icon: <PackageCheck className="w-4 h-4" />,
+      icon: <PackageCheck className="w-4 h-4 shrink-0" />,
       roles: ['ADMINISTRADOR', 'PRODUCCION', 'QA', 'LOGISTICA', 'GERENCIA'],
+      requiredPermission: 'LOTS_VIEW',
+      section: 'TRAZABILIDAD',
     },
     {
       id: 'register-lot',
       path: '/lots/new',
-      label: 'Registrar Nuevo Lote',
-      icon: <PlusCircle className="w-4 h-4" />,
+      label: 'Registrar Lote',
+      icon: <PlusCircle className="w-4 h-4 shrink-0" />,
       roles: ['ADMINISTRADOR', 'PRODUCCION'],
-      badge: 'NUEVO',
+      requiredPermission: 'LOTS_CREATE',
+      badge: 'PROD',
+      section: 'TRAZABILIDAD',
     },
     {
       id: 'quality',
       path: '/quality',
       label: 'QualityTrac (QA)',
-      icon: <ShieldCheck className="w-4 h-4" />,
+      icon: <ShieldCheck className="w-4 h-4 shrink-0" />,
       roles: ['ADMINISTRADOR', 'QA'],
+      requiredPermission: 'QUALITY_VIEW',
       badge: 'QA',
+      section: 'CONTROL DE CALIDAD',
     },
     {
       id: 'coldchain',
       path: '/quality/coldchain',
       label: 'Cadena de Frío',
-      icon: <Thermometer className="w-4 h-4" />,
+      icon: <Thermometer className="w-4 h-4 shrink-0" />,
       roles: ['ADMINISTRADOR', 'QA'],
+      requiredPermission: 'COLD_CHAIN_VIEW',
+      section: 'CONTROL DE CALIDAD',
     },
     {
       id: 'logistics',
       path: '/logistics',
-      label: 'LogisTrac',
-      icon: <FileSpreadsheet className="w-4 h-4" />,
+      label: 'LogisTrac Comex',
+      icon: <FileSpreadsheet className="w-4 h-4 shrink-0" />,
       roles: ['ADMINISTRADOR', 'LOGISTICA'],
+      requiredPermission: 'LOGISTICS_VIEW',
       badge: 'LOG',
+      section: 'LOGÍSTICA & DESPACHO',
     },
     {
       id: 'certification',
       path: '/certification',
       label: 'Certificación SANIPES',
-      icon: <Award className="w-4 h-4" />,
+      icon: <Award className="w-4 h-4 shrink-0" />,
       roles: ['ADMINISTRADOR', 'LOGISTICA', 'QA'],
+      requiredPermission: 'CERTIFICATION_VIEW',
+      section: 'LOGÍSTICA & DESPACHO',
     },
     {
       id: 'dispatch',
       path: '/dispatch',
       label: 'Autorización Despacho',
-      icon: <Truck className="w-4 h-4" />,
+      icon: <Truck className="w-4 h-4 shrink-0" />,
       roles: ['ADMINISTRADOR', 'LOGISTICA'],
+      requiredPermission: 'DISPATCH_VIEW',
+      section: 'LOGÍSTICA & DESPACHO',
     },
     {
       id: 'management',
       path: '/management',
       label: 'Gerencia & KPIs',
-      icon: <BarChart3 className="w-4 h-4" />,
+      icon: <BarChart3 className="w-4 h-4 shrink-0" />,
       roles: ['ADMINISTRADOR', 'GERENCIA'],
+      requiredPermission: 'EXECUTIVE_DASHBOARD_VIEW',
       badge: 'CEO',
+      section: 'SUPERVISIÓN',
     },
     {
-      id: 'admin',
+      id: 'admin-dashboard',
       path: '/admin',
-      label: 'Administración & Audit',
-      icon: <Sliders className="w-4 h-4" />,
+      label: 'Panel Admin & KPIs',
+      icon: <Sliders className="w-4 h-4 shrink-0" />,
       roles: ['ADMINISTRADOR'],
+      requiredPermission: 'ADMIN_DASHBOARD_VIEW',
+      section: 'ADMINISTRACIÓN RBAC',
+    },
+    {
+      id: 'admin-users',
+      path: '/admin/users',
+      label: 'Usuarios & Accesos',
+      icon: <Users className="w-4 h-4 shrink-0" />,
+      roles: ['ADMINISTRADOR'],
+      requiredPermission: 'USERS_VIEW',
+      section: 'ADMINISTRACIÓN RBAC',
+    },
+    {
+      id: 'admin-roles',
+      path: '/admin/roles',
+      label: 'Roles & Permisos',
+      icon: <ShieldCheck className="w-4 h-4 shrink-0" />,
+      roles: ['ADMINISTRADOR'],
+      requiredPermission: 'ROLES_VIEW',
+      section: 'ADMINISTRACIÓN RBAC',
+    },
+    {
+      id: 'admin-modules',
+      path: '/admin/modules',
+      label: 'Módulos del Sistema',
+      icon: <Layers className="w-4 h-4 shrink-0" />,
+      roles: ['ADMINISTRADOR'],
+      requiredPermission: 'ADMIN_DASHBOARD_VIEW',
+      section: 'ADMINISTRACIÓN RBAC',
+    },
+    {
+      id: 'admin-audit',
+      path: '/admin/audit',
+      label: 'Auditoría & Trazabilidad',
+      icon: <History className="w-4 h-4 shrink-0" />,
+      roles: ['ADMINISTRADOR', 'GERENCIA'],
+      requiredPermission: 'AUDIT_VIEW',
+      section: 'ADMINISTRACIÓN RBAC',
     },
   ];
 
-  const visibleNavItems = navItems.filter((item) =>
-    currentRole ? item.roles.includes(currentRole) : false
-  );
+  const visibleNavItems = navItems.filter((item) => {
+    if (!currentRole) return false;
+    if (currentRole === 'ADMINISTRADOR') return true;
+    if (item.requiredPermission && userPerms.includes(item.requiredPermission)) return true;
+    return item.roles.includes(currentRole);
+  });
 
-  return (
-    <aside className="w-64 bg-slate-950 border-r border-slate-800 flex flex-col justify-between shrink-0 min-h-[calc(100vh-57px)] no-print font-sans">
-      <div className="py-4 px-3 space-y-6">
-        {/* User Role & Department Badge */}
-        <div className="px-3 py-2.5 rounded-lg bg-slate-900 border border-slate-800">
-          <span className="text-[10px] uppercase font-extrabold tracking-widest text-teal-400 block">
-            Módulo Autenticado
+  const handleItemClick = (path: string) => {
+    onNavigate(path);
+    if (onCloseMobile) onCloseMobile();
+  };
+
+  const sidebarContent = (
+    <div className="flex flex-col justify-between h-full font-sans">
+      <div className="py-4 px-3 space-y-4 overflow-y-auto">
+        {/* Mobile close header */}
+        <div className="flex items-center justify-between px-2 pb-2 border-b border-white/10 md:hidden">
+          <span className="text-xs font-bold text-white uppercase tracking-wider">Menú ExporTrace</span>
+          {onCloseMobile && (
+            <button
+              onClick={onCloseMobile}
+              className="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10"
+              aria-label="Cerrar menú"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
+        </div>
+
+        {/* Authenticated Department Badge */}
+        <div className="px-3.5 py-2.5 rounded-xl bg-[#0C2A44] border border-white/10 shadow-xs">
+          <span className="text-[10px] uppercase font-black tracking-widest text-teal-300 block">
+            MÓDULO ACTIVO
           </span>
-          <span className="text-xs font-bold text-slate-200 block mt-0.5">
-            {currentUser?.area || 'Módulo Corporativo'}
+          <span className="text-xs font-bold text-white block mt-0.5 truncate">
+            {currentUser?.area || 'Operaciones Pesqueras'}
           </span>
         </div>
 
-        {/* Navigation list */}
+        {/* Navigation items grouped */}
         <nav className="space-y-1">
-          {visibleNavItems.map((item) => {
+          {visibleNavItems.map((item, index) => {
             const isActive =
               currentPath === item.path ||
-              (item.path !== '/dashboard' && !item.path.startsWith('/dashboard/') && currentPath.startsWith(item.path));
+              (item.path !== '/dashboard' &&
+                item.path !== '/admin' &&
+                !item.path.startsWith('/dashboard/') &&
+                currentPath.startsWith(item.path));
+
+            // Section label if first item or section changes
+            const prevItem = visibleNavItems[index - 1];
+            const showSection = item.section && (!prevItem || prevItem.section !== item.section);
+
             return (
-              <button
-                key={item.id}
-                onClick={() => onNavigate(item.path)}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 cursor-pointer ${
-                  isActive
-                    ? 'bg-teal-950/80 text-teal-300 border border-teal-800/60 shadow-md shadow-teal-950'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/80'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <span className={isActive ? 'text-teal-400' : 'text-slate-500'}>{item.icon}</span>
-                  <span>{item.label}</span>
-                </div>
-                {item.badge && (
-                  <span
-                    className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
-                      isActive ? 'bg-teal-500/30 text-teal-200' : 'bg-slate-800 text-slate-400'
-                    }`}
-                  >
-                    {item.badge}
-                  </span>
+              <React.Fragment key={item.id}>
+                {showSection && (
+                  <div className="pt-3 pb-1 px-3">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                      {item.section}
+                    </span>
+                  </div>
                 )}
-              </button>
+                <button
+                  onClick={() => handleItemClick(item.path)}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 cursor-pointer ${
+                    isActive
+                      ? 'bg-[#1D5D8F] text-white border-l-4 border-teal-400 shadow-sm font-semibold'
+                      : 'text-slate-200 hover:text-white hover:bg-[#18456C]'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className={isActive ? 'text-teal-300' : 'text-slate-300'}>{item.icon}</span>
+                    <span className="truncate">{item.label}</span>
+                  </div>
+                  {item.badge && (
+                    <span
+                      className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                        isActive
+                          ? 'bg-teal-400/20 text-teal-200 border border-teal-300/30'
+                          : 'bg-white/10 text-slate-300 border border-white/10'
+                      }`}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              </React.Fragment>
             );
           })}
         </nav>
       </div>
 
       {/* System Status info footer */}
-      <div className="p-4 border-t border-slate-900 bg-slate-950/60 text-xs text-slate-500 space-y-2">
+      <div className="p-4 border-t border-white/10 bg-[#0B253C] text-xs text-slate-300 space-y-2 shrink-0">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] text-slate-400 font-medium">Control de Acceso</span>
-          <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 font-semibold">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-[11px] text-slate-300 font-medium">Control de Acceso</span>
+          <span className="inline-flex items-center gap-1.5 text-[10px] text-teal-300 font-bold bg-teal-900/40 px-2 py-0.5 rounded-full border border-teal-500/30">
+            <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
             RBAC Activo
           </span>
         </div>
-        <div className="flex items-center gap-2 text-[10px] text-slate-500">
-          <History className="w-3 h-3 text-slate-600" />
-          <span>Motor Sanitario: SANIPES v2.6</span>
+        <div className="flex items-center gap-2 text-[10px] text-slate-400">
+          <ShieldAlert className="w-3.5 h-3.5 text-teal-400" />
+          <span>Norma Sanitaria: SANIPES v2.6</span>
         </div>
       </div>
-    </aside>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex w-64 bg-[#123B5D] border-r border-[#0E2E49] flex-col justify-between shrink-0 min-h-[calc(100vh-57px)] no-print">
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile Drawer (backdrop + sliding sidebar) */}
+      {isOpenMobile && (
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          <div
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
+            onClick={onCloseMobile}
+          />
+          <aside className="relative w-64 max-w-[80vw] bg-[#123B5D] flex flex-col justify-between h-full z-10 shadow-2xl overflow-y-auto">
+            {sidebarContent}
+          </aside>
+        </div>
+      )}
+    </>
   );
 };

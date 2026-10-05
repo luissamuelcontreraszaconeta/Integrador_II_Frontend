@@ -61,15 +61,15 @@ export const ValidationChecklist: React.FC<ValidationChecklistProps> = ({
   const allPassed = checks.every((c) => c.status);
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl space-y-6">
-      <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+    <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-6">
+      <div className="flex items-center justify-between border-b border-slate-200 pb-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-teal-950 text-teal-400 border border-teal-800/80">
+          <div className="p-2.5 rounded-xl bg-teal-50 text-[#0F9D8A] border border-teal-200">
             <ShieldCheck className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-slate-100">Motor de Validación Inteligente</h3>
-            <p className="text-xs text-slate-400">
+            <h3 className="text-base font-bold text-slate-900">Motor de Validación Inteligente</h3>
+            <p className="text-xs text-slate-500">
               Verificación automatizada de consistencia normativa y documental del lote {lot.code}
             </p>
           </div>
@@ -93,20 +93,20 @@ export const ValidationChecklist: React.FC<ValidationChecklistProps> = ({
             key={idx}
             className={`p-4 rounded-xl border flex items-start gap-3 transition-all ${
               item.status
-                ? 'bg-emerald-950/20 border-emerald-800/40 text-slate-200'
-                : 'bg-rose-950/20 border-rose-800/40 text-slate-200'
+                ? 'bg-emerald-50/50 border-emerald-200 text-slate-800'
+                : 'bg-rose-50/50 border-rose-200 text-slate-800'
             }`}
           >
             {item.status ? (
-              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
             ) : (
-              <XCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+              <XCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
             )}
             <div className="flex-1">
-              <p className={`text-sm font-semibold ${item.status ? 'text-emerald-300' : 'text-rose-300'}`}>
+              <p className={`text-sm font-semibold ${item.status ? 'text-emerald-800' : 'text-rose-800'}`}>
                 {item.label}
               </p>
-              <p className="text-xs text-slate-400 mt-0.5">{item.detail}</p>
+              <p className="text-xs text-slate-600 mt-0.5">{item.detail}</p>
             </div>
           </div>
         ))}

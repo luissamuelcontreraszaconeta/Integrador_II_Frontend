@@ -25,15 +25,15 @@ export const QualityDashboardPage: React.FC<QualityDashboardPageProps> = ({ onNa
       header: 'Código Lote',
       accessorKey: 'code',
       cell: (item) => (
-        <span className="font-bold text-teal-400">{item.code}</span>
+        <span className="font-bold text-[#0F6CBD]">{item.code}</span>
       ),
     },
     {
       header: 'Producto',
       cell: (item) => (
         <div>
-          <span className="font-semibold text-slate-100 block text-xs">{item.production.productName}</span>
-          <span className="text-[10px] text-slate-400">Embarcación: {item.production.vesselName}</span>
+          <span className="font-semibold text-slate-800 block text-xs">{item.production.productName}</span>
+          <span className="text-[10px] text-slate-500">Embarcación: {item.production.vesselName}</span>
         </div>
       ),
     },
@@ -44,7 +44,7 @@ export const QualityDashboardPage: React.FC<QualityDashboardPageProps> = ({ onNa
     {
       header: 'Resultado Organoléptico',
       cell: (item) => (
-        <span className={`text-xs font-bold ${item.qa?.organolepticResult === 'CONFORME' ? 'text-emerald-400' : item.qa ? 'text-rose-400' : 'text-amber-400'}`}>
+        <span className={`text-xs font-bold ${item.qa?.organolepticResult === 'CONFORME' ? 'text-emerald-600' : item.qa ? 'text-rose-600' : 'text-amber-600'}`}>
           {item.qa ? item.qa.organolepticResult : 'PENDIENTE INSPECCION'}
         </span>
       ),
@@ -116,7 +116,7 @@ export const QualityDashboardPage: React.FC<QualityDashboardPageProps> = ({ onNa
 
       {/* Table of Lots requiring QA Inspection */}
       <div className="space-y-4">
-        <h3 className="text-base font-bold text-slate-100">Bandeja de Control de Calidad</h3>
+        <h3 className="text-base font-bold text-slate-900">Bandeja de Control de Calidad</h3>
         <DataTable columns={columns} data={lots} keyExtractor={(item) => item.id} />
       </div>
     </div>

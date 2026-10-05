@@ -2,7 +2,8 @@ import { AuthUser, LoginRequest, LoginResponse, UserRole } from './auth.types';
 
 const TOKEN_KEY = 'exportrace_jwt_token';
 const USER_KEY = 'exportrace_auth_user';
-const API_URL = 'http://localhost:8080/api/auth/login';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+const API_URL = `${BASE_URL.replace(/\/$/, '')}/auth/login`;
 
 export const authService = {
   /**
@@ -40,6 +41,8 @@ export const authService = {
         email: data.user.email,
         role: data.user.rol as UserRole,
         area: data.user.area,
+        status: data.user.estado || 'ACTIVO',
+        permissions: data.user.permissions || [],
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
       };
 
@@ -89,6 +92,8 @@ export const authService = {
    */
   getInitialRouteByRole: (role: UserRole): string => {
     switch (role) {
+      case 'SUPERADMIN':
+        return '/superadmin';
       case 'ADMINISTRADOR':
         return '/dashboard/admin';
       case 'PRODUCCION':

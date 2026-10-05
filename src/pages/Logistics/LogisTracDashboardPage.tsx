@@ -22,7 +22,7 @@ export const LogisTracDashboardPage: React.FC<LogisTracDashboardPageProps> = ({ 
         <div>
           <button
             onClick={() => onNavigate(`/lots/${item.id}`)}
-            className="font-bold text-teal-400 hover:underline cursor-pointer"
+            className="font-bold text-[#0F6CBD] hover:underline cursor-pointer"
           >
             {item.code}
           </button>
@@ -33,7 +33,7 @@ export const LogisTracDashboardPage: React.FC<LogisTracDashboardPageProps> = ({ 
     {
       header: 'Producción',
       cell: () => (
-        <span className="inline-flex items-center gap-1 text-emerald-400 font-bold text-xs">
+        <span className="inline-flex items-center gap-1 text-emerald-600 font-bold text-xs">
           <CheckCircle2 className="w-3.5 h-3.5" /> Completa
         </span>
       ),
@@ -42,15 +42,15 @@ export const LogisTracDashboardPage: React.FC<LogisTracDashboardPageProps> = ({ 
       header: 'Calidad QA',
       cell: (item) => (
         item.qa?.organolepticResult === 'CONFORME' ? (
-          <span className="inline-flex items-center gap-1 text-emerald-400 font-bold text-xs">
+          <span className="inline-flex items-center gap-1 text-emerald-600 font-bold text-xs">
             <CheckCircle2 className="w-3.5 h-3.5" /> Conforme
           </span>
         ) : item.qa ? (
-          <span className="inline-flex items-center gap-1 text-rose-400 font-bold text-xs">
+          <span className="inline-flex items-center gap-1 text-rose-600 font-bold text-xs">
             <XCircle className="w-3.5 h-3.5" /> Observado
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1 text-amber-400 font-bold text-xs">
+          <span className="inline-flex items-center gap-1 text-amber-600 font-bold text-xs">
             <Clock className="w-3.5 h-3.5" /> Pendiente
           </span>
         )
@@ -60,11 +60,11 @@ export const LogisTracDashboardPage: React.FC<LogisTracDashboardPageProps> = ({ 
       header: 'Cadena Frío',
       cell: (item) => (
         item.coldChainLogs.length > 0 && !item.coldChainLogs.some((c) => c.status === 'CRITICAL') ? (
-          <span className="inline-flex items-center gap-1 text-emerald-400 font-bold text-xs">
+          <span className="inline-flex items-center gap-1 text-emerald-600 font-bold text-xs">
             <CheckCircle2 className="w-3.5 h-3.5" /> Conforme
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1 text-rose-400 font-bold text-xs">
+          <span className="inline-flex items-center gap-1 text-rose-600 font-bold text-xs">
             <XCircle className="w-3.5 h-3.5" /> Alerta/Pendiente
           </span>
         )
@@ -74,11 +74,11 @@ export const LogisTracDashboardPage: React.FC<LogisTracDashboardPageProps> = ({ 
       header: 'Documentación',
       cell: (item) => (
         item.documents.length >= 2 ? (
-          <span className="inline-flex items-center gap-1 text-emerald-400 font-bold text-xs">
+          <span className="inline-flex items-center gap-1 text-emerald-600 font-bold text-xs">
             <CheckCircle2 className="w-3.5 h-3.5" /> Completa ({item.documents.length})
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1 text-amber-400 font-bold text-xs">
+          <span className="inline-flex items-center gap-1 text-amber-600 font-bold text-xs">
             <Clock className="w-3.5 h-3.5" /> Faltantes
           </span>
         )
@@ -134,7 +134,7 @@ export const LogisTracDashboardPage: React.FC<LogisTracDashboardPageProps> = ({ 
       />
 
       <div className="space-y-4">
-        <h3 className="text-base font-bold text-slate-100">Matriz Integral de Lotes Pesqueros</h3>
+        <h3 className="text-base font-bold text-slate-900">Matriz Integral de Lotes Pesqueros</h3>
         <DataTable columns={columns} data={lots} keyExtractor={(item) => item.id} />
       </div>
     </div>

@@ -19,9 +19,9 @@ interface ColdChainGraphProps {
 export const ColdChainGraph: React.FC<ColdChainGraphProps> = ({ logs }) => {
   if (!logs || logs.length === 0) {
     return (
-      <div className="p-8 text-center bg-slate-900/50 border border-slate-800 rounded-xl text-slate-400">
-        <Thermometer className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-        <p className="text-sm font-medium">Sin registros de temperatura en cadena de frío</p>
+      <div className="p-8 text-center bg-white border border-slate-200 rounded-xl text-slate-500 shadow-2xs">
+        <Thermometer className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+        <p className="text-sm font-semibold text-slate-700">Sin registros de temperatura en cadena de frío</p>
         <p className="text-xs text-slate-500 mt-1">
           Regístrelos en el módulo QualityTrac para visualizar la curva de temperatura.
         </p>
@@ -40,47 +40,54 @@ export const ColdChainGraph: React.FC<ColdChainGraphProps> = ({ logs }) => {
   const hasWarning = logs.some((l) => l.status === 'WARNING');
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-4">
-      <div className="flex items-center justify-between">
+    <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
         <div>
-          <h4 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-            <Thermometer className="w-4 h-4 text-cyan-400" />
+          <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+            <Thermometer className="w-4 h-4 text-[#0F6CBD]" />
             Curva de Control de Cadena de Frío (°C)
           </h4>
-          <p className="text-xs text-slate-400">Límite normativo SANIPES: congelación profunda ≤ -18.0 °C</p>
+          <p className="text-xs text-slate-500 mt-0.5">Límite normativo SANIPES: congelación profunda &le; -18.0 °C</p>
         </div>
 
         <div className="flex items-center gap-2">
           {hasCritical ? (
-            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-950 text-rose-300 border border-rose-800 flex items-center gap-1">
-              <AlertCircle className="w-3.5 h-3.5 text-rose-400" /> Alerta Térmica
+            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 flex items-center gap-1 shadow-2xs">
+              <AlertCircle className="w-3.5 h-3.5 text-rose-600" /> Alerta Térmica
             </span>
           ) : hasWarning ? (
-            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-950 text-amber-300 border border-amber-800 flex items-center gap-1">
-              <AlertCircle className="w-3.5 h-3.5 text-amber-400" /> Advertencia
+            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-1 shadow-2xs">
+              <AlertCircle className="w-3.5 h-3.5 text-amber-600" /> Advertencia
             </span>
           ) : (
-            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-950 text-emerald-300 border border-emerald-800 flex items-center gap-1">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Normal (-18°C OK)
+            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1 shadow-2xs">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Normal (-18°C OK)
             </span>
           )}
         </div>
       </div>
 
-      <div className="h-64 w-full">
+      <div className="h-64 w-full pt-2">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-            <XAxis dataKey="name" stroke="#64748b" fontSize={11} />
-            <YAxis domain={[-30, -5]} stroke="#64748b" fontSize={11} unit="°C" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
+            <XAxis dataKey="name" stroke="#64748B" fontSize={11} tick={{ fill: '#64748B' }} />
+            <YAxis domain={[-30, -5]} stroke="#64748B" fontSize={11} unit="°C" tick={{ fill: '#64748B' }} />
             <RechartsTooltip
-              contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px' }}
-              labelStyle={{ color: '#f8fafc', fontWeight: 'bold' }}
+              contentStyle={{
+                backgroundColor: '#FFFFFF',
+                borderColor: '#E2E8F0',
+                borderRadius: '8px',
+                color: '#1E293B',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                fontSize: '12px'
+              }}
+              labelStyle={{ color: '#0F4C81', fontWeight: 'bold' }}
             />
             <ReferenceLine
               y={-18}
-              label={{ value: 'Límite SANIPES -18°C', fill: '#f43f5e', fontSize: 10, position: 'insideTopRight' }}
-              stroke="#f43f5e"
+              label={{ value: 'Límite SANIPES -18°C', fill: '#DC2626', fontSize: 10, position: 'insideTopRight' }}
+              stroke="#DC2626"
               strokeDasharray="4 4"
               strokeWidth={2}
             />
@@ -88,10 +95,10 @@ export const ColdChainGraph: React.FC<ColdChainGraphProps> = ({ logs }) => {
               type="monotone"
               dataKey="temperature"
               name="Temperatura (°C)"
-              stroke="#06b6d4"
+              stroke="#0F9D8A"
               strokeWidth={3}
-              dot={{ r: 5, fill: '#06b6d4' }}
-              activeDot={{ r: 8 }}
+              dot={{ r: 5, fill: '#0F9D8A', stroke: '#FFFFFF', strokeWidth: 2 }}
+              activeDot={{ r: 8, fill: '#0F6CBD' }}
             />
           </LineChart>
         </ResponsiveContainer>
