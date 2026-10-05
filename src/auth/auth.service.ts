@@ -1,9 +1,9 @@
 import { AuthUser, LoginRequest, LoginResponse, UserRole } from './auth.types';
+import { API_BASE_URL } from '../services/apiConfig';
 
 const TOKEN_KEY = 'exportrace_jwt_token';
 const USER_KEY = 'exportrace_auth_user';
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
-const API_URL = `${BASE_URL.replace(/\/$/, '')}/auth/login`;
+const API_URL = `${API_BASE_URL}/auth/login`;
 
 export const authService = {
   /**

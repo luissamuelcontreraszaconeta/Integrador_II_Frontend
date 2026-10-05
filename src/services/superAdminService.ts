@@ -11,9 +11,9 @@ import {
   PageResponse,
 } from '../types/superAdmin';
 import { CreateUserPayload, UpdateUserPayload } from '../types/admin';
+import { API_BASE_URL } from './apiConfig';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
-const SUPERADMIN_API = `${BASE_URL.replace(/\/$/, '')}/superadmin`;
+const SUPERADMIN_API = `${API_BASE_URL}/superadmin`;
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('exportrace_jwt_token');

@@ -19,6 +19,7 @@ import {
   Layers 
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
+import { API_BASE_URL } from '../../services/apiConfig';
 
 interface PublicTraceabilityPageProps {
   token: string;
@@ -35,10 +36,8 @@ export const PublicTraceabilityPage: React.FC<PublicTraceabilityPageProps> = ({ 
     setLoading(true);
     setError(null);
 
-    const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined) || 'http://localhost:8080/api';
-
     try {
-      const response = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/public/traceability/${encodeURIComponent(token)}`);
+      const response = await fetch(`${API_BASE_URL}/public/traceability/${encodeURIComponent(token)}`);
       
       if (response.ok) {
         const json: PublicTraceabilityData = await response.json();

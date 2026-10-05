@@ -1,7 +1,7 @@
 import { NotificationItem } from '../types/notification';
+import { API_BASE_URL } from './apiConfig';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
-const NOTIFICATIONS_API = `${BASE_URL.replace(/\/$/, '')}/notifications`;
+const NOTIFICATIONS_API = `${API_BASE_URL}/notifications`;
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('exportrace_jwt_token');
