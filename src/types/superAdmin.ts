@@ -93,6 +93,10 @@ export interface SuperAdminSecurityData {
   accessDeniedCount: number;
   deactivatedUsersCount: number;
   totalSuperAdmins: number;
+  activeSessionsCount?: number;
+  expiredSessionsCount?: number;
+  revokedSessionsCount?: number;
+  totalPoliciesCount?: number;
   failedLoginEvents: AuditLogItem[];
   accessDeniedEvents: AuditLogItem[];
   recentPrivilegeChanges: AuditLogItem[];

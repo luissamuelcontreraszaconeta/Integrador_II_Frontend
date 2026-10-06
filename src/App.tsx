@@ -7,6 +7,7 @@ import { roleGuard } from './auth/role.guard';
 
 import { AppLayout } from './components/layout/AppLayout';
 import { SuperAdminLayout } from './layouts/SuperAdminLayout';
+import { SessionManager } from './components/auth/SessionManager';
 import { LoginPage } from './pages/Login/LoginPage';
 import { DashboardPage } from './pages/Dashboard/DashboardPage';
 import { LotsListPage } from './pages/Lots/LotsListPage';
@@ -265,6 +266,7 @@ export function App() {
   return (
     <AuthProvider>
       <LotProvider>
+        <SessionManager />
         <MainAppRouter />
       </LotProvider>
     </AuthProvider>

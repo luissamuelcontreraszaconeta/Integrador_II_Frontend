@@ -25,7 +25,7 @@ interface LoginPageProps {
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
-  const { login, authError } = useAuth();
+  const { login, authError, sessionExpiryNotification } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -174,6 +174,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                 Ingrese con sus credenciales institucionales para acceder al sistema.
               </p>
             </div>
+
+            {sessionExpiryNotification && !displayError && (
+              <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-medium flex items-center space-x-2">
+                <span className="text-amber-600 font-bold">⚠️</span>
+                <span>{sessionExpiryNotification}</span>
+              </div>
+            )}
 
             {displayError && (
               <AlertCard

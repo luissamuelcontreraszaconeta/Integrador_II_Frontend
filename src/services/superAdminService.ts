@@ -10,6 +10,7 @@ import {
   AuditLogItem,
   PageResponse,
 } from '../types/superAdmin';
+import { SessionPolicy, UserSessionInfo } from '../auth/auth.types';
 import { CreateUserPayload, UpdateUserPayload } from '../types/admin';
 import { API_BASE_URL } from './apiConfig';
 
@@ -275,6 +276,53 @@ export const superAdminService = {
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.message || 'Error al actualizar configuración');
+    }
+    return res.json();
+  },
+
+  // Dynamic Session Policies (SuperAdmin)
+  getSessionPolicies: async (): Promise<SessionPolicy[]> => {
+    const res = await fetch(`${SUPERADMIN_API}/security/session-policies`, {
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) throw new Error('Error al obtener políticas de sesión');
+    return res.json();
+  },
+
+  updateSessionPolicy: async (
+    role: string,
+    data: { idleTimeoutMinutes: number; absoluteTimeoutMinutes: number; warningBeforeMinutes: number; enabled?: boolean }
+  ): Promise<SessionPolicy> => {
+    const res = await fetch(`${SUPERADMIN_API}/security/session-policies/${encodeURIComponent(role)}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'Error al actualizar política de sesión');
+    }
+    return res.json();
+  },
+
+  // Active User Sessions (SuperAdmin)
+  getUserSessions: async (): Promise<UserSessionInfo[]> => {
+    const res = await fetch(`${SUPERADMIN_API}/security/sessions`, {
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) throw new Error('Error al obtener sesiones de usuario');
+    return res.json();
+  },
+
+  revokeUserSession: async (sessionId: string, reason?: string): Promise<{ message: string }> => {
+    const res = await fetch(`${SUPERADMIN_API}/security/sessions/${sessionId}/revoke`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ reason }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'Error al revocar sesión');
     }
     return res.json();
   },

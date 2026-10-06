@@ -123,7 +123,8 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileSidebar, onNavigat
           </div>
 
           <button
-            onClick={logout}
+            type="button"
+            onClick={() => logout()}
             className="p-2 sm:px-3 sm:py-1.5 rounded-lg text-slate-600 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-semibold shadow-2xs"
             title="Cerrar Sesión"
           >
