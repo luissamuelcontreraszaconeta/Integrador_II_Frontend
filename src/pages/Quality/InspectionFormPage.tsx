@@ -14,10 +14,11 @@ import {
   AlertTriangle,
   CheckCircle2,
   Image as ImageIcon,
-  FileText
+  FileText,
+  Lock,
+  FileCheck
 } from 'lucide-react';
 import { qualityService } from '../../services/qualityService';
-import { BACKEND_ROOT_URL } from '../../services/apiConfig';
 import type { QaEvidenceItem } from '../../types/quality';
 
 interface InspectionFormPageProps {
@@ -29,6 +30,10 @@ interface SelectedFileEvidence {
   file: File;
   previewUrl: string;
   description: string;
+}
+
+interface EnrichedQaEvidence extends QaEvidenceItem {
+  blobUrl?: string;
 }
 
 export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, onNavigate }) => {
@@ -47,14 +52,15 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
 
   // Real Photographic Evidence State
   const [selectedFiles, setSelectedFiles] = useState<SelectedFileEvidence[]>([]);
-  const [existingEvidences, setExistingEvidences] = useState<QaEvidenceItem[]>([]);
-  const [lightboxImage, setLightboxImage] = useState<{ url: string; title: string; desc?: string } | null>(null);
+  const [existingEvidences, setExistingEvidences] = useState<EnrichedQaEvidence[]>([]);
+  const [lightboxImage, setLightboxImage] = useState<{ url: string; title: string; desc?: string; sha256?: string } | null>(null);
 
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const isLocked = lot?.status === 'CERTIFIED' || lot?.status === 'READY_FOR_DISPATCH' || lot?.status === 'DISPATCHED';
+
   useEffect(() => {
-    // Load existing QA inspection and evidences if lot has any
     loadExistingInspection();
   }, [lotId]);
 
@@ -73,7 +79,17 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
 
         if (inspectionData.id) {
           const evList = await qualityService.getEvidencesByInspection(inspectionData.id);
-          setExistingEvidences(evList);
+          const enriched: EnrichedQaEvidence[] = await Promise.all(
+            evList.map(async (ev) => {
+              try {
+                const blobUrl = await qualityService.fetchEvidenceBlobUrl(ev.id);
+                return { ...ev, blobUrl };
+              } catch {
+                return { ...ev };
+              }
+            })
+          );
+          setExistingEvidences(enriched);
         }
       }
     } catch (err) {
@@ -89,6 +105,11 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
   const handleFilesAdded = (files: FileList | null) => {
     if (!files || files.length === 0) return;
     setErrorMsg(null);
+
+    if (isLocked) {
+      setErrorMsg('BLOQUEO P0-C: El lote ya se encuentra certificado o despachado. No se permite agregar nuevas evidencias.');
+      return;
+    }
 
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
     const maxFileSize = 5 * 1024 * 1024; // 5MB
@@ -125,7 +146,12 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
   };
 
   const handleDeleteExistingEvidence = async (evidenceId: number) => {
-    if (!confirm('¿Desea eliminar permanentemente esta evidencia fotográfica?')) return;
+    if (isLocked) {
+      alert('BLOQUEO P0-C: No se puede eliminar evidencias de un lote certificado o despachado.');
+      return;
+    }
+
+    if (!confirm('¿Desea desactivar esta evidencia fotográfica? La acción quedará registrada en auditoría.')) return;
     try {
       const numLotId = Number(lotId) || 1;
       const inspection = await qualityService.getInspectionByLotId(numLotId);
@@ -176,7 +202,7 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
         for (const item of selectedFiles) {
           try {
             await qualityService.uploadEvidence(savedInspection.id, item.file, item.description);
-          } catch (uploadErr) {
+          } catch (uploadErr: any) {
             console.error('Error al subir imagen individual:', uploadErr);
           }
         }
@@ -201,6 +227,15 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
           { label: `Inspección ${lot.code}` },
         ]}
       />
+
+      {isLocked && (
+        <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 flex items-center space-x-3 text-sm animate-fade-in">
+          <Lock className="w-5 h-5 text-amber-700 flex-shrink-0" />
+          <span>
+            <strong>Lote Inmutable:</strong> Este lote se encuentra en estado <strong>{lot.status}</strong>. La auditoría y las evidencias fotográficas están bloqueadas contra modificaciones.
+          </span>
+        </div>
+      )}
 
       {errorMsg && (
         <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-800 flex items-center space-x-3 text-sm animate-fade-in">
@@ -234,6 +269,7 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
           <Select
             label="Apariencia General"
             value={appearance}
+            disabled={isLocked}
             onChange={(e) => setAppearance(e.target.value as any)}
             options={[
               { value: 'EXCELENTE', label: 'Excelente (Superficie brillante, pulpa uniforme)' },
@@ -246,6 +282,7 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
           <Select
             label="Coloración de la Pulpa"
             value={color}
+            disabled={isLocked}
             onChange={(e) => setColor(e.target.value as any)}
             options={[
               { value: 'CONFORME', label: 'Conforme (Blanco nacarado / característico)' },
@@ -256,6 +293,7 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
           <Select
             label="Textura Muscular"
             value={texture}
+            disabled={isLocked}
             onChange={(e) => setTexture(e.target.value as any)}
             options={[
               { value: 'FIRM', label: 'Firme y Elástica (Turgente)' },
@@ -267,6 +305,7 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
           <Select
             label="Olor Característico"
             value={smell}
+            disabled={isLocked}
             onChange={(e) => setSmell(e.target.value as any)}
             options={[
               { value: 'CARACTERISTICO', label: 'Característico a mar fresco' },
@@ -277,6 +316,7 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
           <Select
             label="Examen de Parásitos (Anisakis / Kudoa)"
             value={parasiteCheck}
+            disabled={isLocked}
             onChange={(e) => setParasiteCheck(e.target.value as any)}
             options={[
               { value: 'AUSENCIA', label: 'Ausencia total de quistes o larva' },
@@ -287,6 +327,7 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
           <Select
             label="Resultado Global de Inspección"
             value={organolepticResult}
+            disabled={isLocked}
             onChange={(e) => setOrganolepticResult(e.target.value as any)}
             options={[
               { value: 'CONFORME', label: 'CONFORME (Apto para consumo y exportación)' },
@@ -304,6 +345,7 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
           <textarea
             className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
             rows={3}
+            disabled={isLocked}
             value={observations}
             onChange={(e) => setObservations(e.target.value)}
             placeholder="Ingrese hallazgos organolépticos, muestreo en mesa de corte o condiciones térmicas..."
@@ -316,10 +358,10 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
             <div>
               <span className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <Camera className="w-4 h-4 text-primary-600" />
-                Evidencia Fotográfica Real de Inspección
+                Evidencia Fotográfica Real de Inspección (P0-C / SHA-256)
               </span>
               <p className="text-xs text-slate-500 mt-0.5">
-                Adjunte imágenes reales de corte, muestreo y textura. Formatos permitidos: JPG, PNG, WEBP (máx. 5 MB).
+                Custodia fotográfica protegida. Formatos válidos: JPG, PNG, WEBP (máx. 5 MB por imagen).
               </p>
             </div>
 
@@ -329,6 +371,7 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
               ref={cameraInputRef}
               accept="image/*"
               capture="environment"
+              disabled={isLocked}
               className="hidden"
               onChange={(e) => handleFilesAdded(e.target.files)}
             />
@@ -337,31 +380,34 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
               ref={fileInputRef}
               accept="image/jpeg,image/png,image/webp"
               multiple
+              disabled={isLocked}
               className="hidden"
               onChange={(e) => handleFilesAdded(e.target.files)}
             />
 
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => cameraInputRef.current?.click()}
-                className="px-3.5 py-2 rounded-xl bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs"
-                title="Tomar fotografía desde cámara"
-              >
-                <Camera className="w-3.5 h-3.5" />
-                <span>Tomar Foto</span>
-              </button>
+            {!isLocked && (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => cameraInputRef.current?.click()}
+                  className="px-3.5 py-2 rounded-xl bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs"
+                  title="Tomar fotografía desde cámara"
+                >
+                  <Camera className="w-3.5 h-3.5" />
+                  <span>Tomar Foto</span>
+                </button>
 
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs"
-                title="Seleccionar archivos desde galería o disco"
-              >
-                <Upload className="w-3.5 h-3.5" />
-                <span>Subir Archivos</span>
-              </button>
-            </div>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs"
+                  title="Seleccionar archivos desde galería o disco"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>Subir Archivos</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Newly Selected Evidence Thumbnails (Pending Save) */}
@@ -424,55 +470,59 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
           {existingEvidences.length > 0 && (
             <div className="space-y-3 pt-2">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-600 block">
-                Evidencias Registradas Previamente ({existingEvidences.length})
+                Evidencias Registradas y Protegidas ({existingEvidences.length})
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                {existingEvidences.map((ev) => (
-                  <div
-                    key={ev.id}
-                    className="relative bg-white border border-slate-200 rounded-xl p-2.5 shadow-xs flex items-center space-x-3 group"
-                  >
-                    <img
-                      src={
-                        ev.fileUrl.startsWith('http')
-                          ? ev.fileUrl
-                          : `${BACKEND_ROOT_URL}${ev.fileUrl.startsWith('/') ? '' : '/'}${ev.fileUrl}`
-                      }
-                      alt={ev.fileName}
-                      className="w-16 h-16 rounded-lg object-cover border border-slate-100 shrink-0 cursor-pointer"
-                      onClick={() =>
-                        setLightboxImage({
-                          url: ev.fileUrl.startsWith('http')
-                            ? ev.fileUrl
-                            : `${BACKEND_ROOT_URL}${ev.fileUrl.startsWith('/') ? '' : '/'}${ev.fileUrl}`,
-                          title: ev.fileName,
-                          desc: ev.description,
-                        })
-                      }
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src =
-                          'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=200';
-                      }}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold text-slate-800 truncate">{ev.fileName}</p>
-                      <p className="text-[10px] text-slate-400">
-                        {ev.uploadedBy} • {ev.uploadedAt ? new Date(ev.uploadedAt).toLocaleDateString() : ''}
-                      </p>
-                      <p className="text-[11px] text-slate-600 truncate mt-0.5 italic">
-                        {ev.description || 'Sin descripción'}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteExistingEvidence(ev.id)}
-                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                      title="Eliminar evidencia"
+                {existingEvidences.map((ev) => {
+                  const displayImg = ev.blobUrl || 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=200';
+                  return (
+                    <div
+                      key={ev.id}
+                      className="relative bg-white border border-slate-200 rounded-xl p-2.5 shadow-xs flex items-center space-x-3 group"
                     >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
+                      <img
+                        src={displayImg}
+                        alt={ev.originalFileName || ev.fileName}
+                        className="w-16 h-16 rounded-lg object-cover border border-slate-100 shrink-0 cursor-pointer"
+                        onClick={() =>
+                          setLightboxImage({
+                            url: displayImg,
+                            title: ev.originalFileName || ev.fileName,
+                            desc: ev.description,
+                            sha256: ev.sha256,
+                          })
+                        }
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-slate-800 truncate" title={ev.originalFileName || ev.fileName}>
+                          {ev.originalFileName || ev.fileName}
+                        </p>
+                        <p className="text-[10px] text-slate-400">
+                          {ev.uploadedBy} • {ev.uploadedAt ? new Date(ev.uploadedAt).toLocaleDateString() : ''}
+                        </p>
+                        {ev.sha256 && (
+                          <span className="inline-flex items-center gap-1 text-[9px] text-emerald-700 font-mono bg-emerald-50 px-1.5 py-0.5 rounded mt-0.5">
+                            <FileCheck className="w-2.5 h-2.5" />
+                            SHA-256 Verificado
+                          </span>
+                        )}
+                        <p className="text-[11px] text-slate-600 truncate mt-0.5 italic">
+                          {ev.description || 'Sin descripción'}
+                        </p>
+                      </div>
+                      {!isLocked && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteExistingEvidence(ev.id)}
+                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                          title="Desactivar evidencia"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -494,17 +544,19 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
             onClick={() => onNavigate(`/lots/${lot.id}`)}
             icon={<X className="w-4 h-4" />}
           >
-            Cancelar
+            {isLocked ? 'Volver al Lote' : 'Cancelar'}
           </Button>
-          <Button
-            variant="teal"
-            size="md"
-            type="submit"
-            isLoading={isSubmitting}
-            icon={<Save className="w-4 h-4" />}
-          >
-            Guardar Inspección QA
-          </Button>
+          {!isLocked && (
+            <Button
+              variant="teal"
+              size="md"
+              type="submit"
+              isLoading={isSubmitting}
+              icon={<Save className="w-4 h-4" />}
+            >
+              Guardar Inspección QA
+            </Button>
+          )}
         </div>
       </form>
 
@@ -536,11 +588,18 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
               />
             </div>
 
-            {lightboxImage.desc && (
-              <p className="text-xs text-slate-600 mt-3 p-2 bg-slate-50 rounded-lg">
-                <strong>Descripción:</strong> {lightboxImage.desc}
-              </p>
-            )}
+            <div className="mt-3 space-y-1.5">
+              {lightboxImage.desc && (
+                <p className="text-xs text-slate-700 bg-slate-50 p-2 rounded-lg">
+                  <strong>Descripción:</strong> {lightboxImage.desc}
+                </p>
+              )}
+              {lightboxImage.sha256 && (
+                <p className="text-[10px] text-slate-500 font-mono bg-slate-100 p-1.5 rounded truncate">
+                  <strong>SHA-256:</strong> {lightboxImage.sha256}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       )}

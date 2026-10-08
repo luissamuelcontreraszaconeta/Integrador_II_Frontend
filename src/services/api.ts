@@ -70,7 +70,7 @@ export const apiService = {
       id: `lot-${Date.now()}`,
       code,
       qrToken,
-      status: 'PENDING_QA',
+      status: 'REGISTERED',
       createdAt: now,
       updatedAt: now,
       createdBy: authorName,
@@ -136,7 +136,7 @@ export const apiService = {
     const now = new Date().toISOString();
 
     const isConforme = qaData.organolepticResult === 'CONFORME';
-    const newStatus = isConforme ? 'VALIDATION_PENDING' : 'OBSERVED';
+    const newStatus = isConforme ? 'READY_FOR_CERTIFICATION' : 'OBSERVED';
 
     lot.qa = {
       ...qaData,
@@ -321,6 +321,10 @@ export const apiService = {
     if (index === -1) throw new Error('Lote no encontrado');
 
     const lot = lots[index];
+    if (lot.qa?.organolepticResult !== 'CONFORME') {
+      throw new Error('BLOQUEO P0: No se puede iniciar trámite SANIPES si el lote no cuenta con dictamen QA CONFORME.');
+    }
+
     const now = new Date().toISOString();
 
     const certId = `cert-${Date.now()}`;
@@ -439,6 +443,10 @@ export const apiService = {
     if (index === -1) throw new Error('Lote no encontrado');
 
     const lot = lots[index];
+    if (lot.status !== 'CERTIFIED' && lot.status !== 'READY_FOR_DISPATCH') {
+      throw new Error('BLOQUEO P0: El lote debe contar con Certificado Sanitario Oficial aprobado antes de ser despachado.');
+    }
+
     const now = new Date().toISOString();
 
     lot.dispatchInfo = {

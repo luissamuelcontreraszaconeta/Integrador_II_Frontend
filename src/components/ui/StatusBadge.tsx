@@ -21,9 +21,10 @@ interface StatusBadgeProps {
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md', showIcon = true }) => {
   const getStatusConfig = (st: LotStatus) => {
     switch (st) {
+      case 'REGISTERED':
       case 'DRAFT':
         return {
-          label: 'Borrador',
+          label: 'Registrado',
           bg: 'bg-slate-100 text-slate-700 border-slate-300',
           dot: 'bg-slate-500',
           icon: <FileText className="w-3.5 h-3.5 text-slate-600" />,
@@ -35,12 +36,27 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md', s
           dot: 'bg-amber-500',
           icon: <Clock className="w-3.5 h-3.5 text-amber-600" />,
         };
+      case 'UNDER_QA_INSPECTION':
       case 'IN_QA':
         return {
           label: 'En Control QA',
           bg: 'bg-sky-50 text-sky-800 border-sky-300',
           dot: 'bg-sky-500 animate-pulse',
           icon: <ShieldCheck className="w-3.5 h-3.5 text-sky-600" />,
+        };
+      case 'REJECTED':
+        return {
+          label: 'Rechazado (No Conforme)',
+          bg: 'bg-rose-100 text-rose-900 border-rose-400 font-bold',
+          dot: 'bg-rose-700',
+          icon: <AlertTriangle className="w-3.5 h-3.5 text-rose-700" />,
+        };
+      case 'CANCELLED':
+        return {
+          label: 'Anulado',
+          bg: 'bg-slate-200 text-slate-600 border-slate-400',
+          dot: 'bg-slate-400',
+          icon: <FileText className="w-3.5 h-3.5 text-slate-500" />,
         };
       case 'OBSERVED':
         return {

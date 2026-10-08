@@ -1,15 +1,20 @@
 export type LotStatus = 
+  | 'REGISTERED'
+  | 'UNDER_QA_INSPECTION'
+  | 'OBSERVED'
+  | 'REJECTED'
+  | 'READY_FOR_CERTIFICATION'
+  | 'IN_CERTIFICATION'
+  | 'CERTIFIED'
+  | 'READY_FOR_DISPATCH'
+  | 'DISPATCHED'
+  | 'CANCELLED'
+  // Legacy aliases
   | 'DRAFT'
   | 'PENDING_QA'
   | 'IN_QA'
-  | 'OBSERVED'
   | 'VALIDATION_PENDING'
-  | 'READY_FOR_CERTIFICATION'
-  | 'IN_CERTIFICATION'
-  | 'CERTIFICATION_OBSERVED'
-  | 'CERTIFIED'
-  | 'READY_FOR_DISPATCH'
-  | 'DISPATCHED';
+  | 'CERTIFICATION_OBSERVED';
 
 export type ProductType = 
   | 'POTA_CONGELADA_BLOCK'
@@ -40,15 +45,21 @@ export interface ProductionInfo {
 }
 
 export interface QAInspection {
+  id?: number | string;
+  lotId?: number | string;
+  inspectionNumber?: number;
   inspectedAt?: string;
   inspectorName?: string;
-  appearance: 'EXCELENTE' | 'BUENO' | 'REGULAR' | 'DEFECTUOSO';
-  color: 'CONFORME' | 'OBSERVADO';
-  texture: 'CONFORME' | 'FIRM' | 'BLANDA';
-  smell: 'CARACTERISTICO' | 'OBSERVADO';
-  parasiteCheck: 'AUSENCIA' | 'PRESENCIA';
-  organolepticResult: 'CONFORME' | 'OBSERVADO' | 'NO_CONFORME';
+  appearance: 'EXCELENTE' | 'BUENO' | 'REGULAR' | 'DEFECTUOSO' | string;
+  color: 'CONFORME' | 'OBSERVADO' | string;
+  texture: 'CONFORME' | 'FIRM' | 'BLANDA' | string;
+  smell: 'CARACTERISTICO' | 'OBSERVADO' | string;
+  parasiteCheck: 'AUSENCIA' | 'PRESENCIA' | string;
+  organolepticResult: 'CONFORME' | 'OBSERVADO' | 'NO_CONFORME' | string;
   observations?: string;
+  reinspectionReason?: string;
+  createdAt?: string;
+  createdBy?: string;
   evidenceUrls?: string[];
 }
 
@@ -94,12 +105,14 @@ export interface Lot {
   code: string; // e.g., EXP-2026-001
   qrToken?: string;
   status: LotStatus;
+  version?: number;
   createdAt: string;
   updatedAt: string;
   createdBy: string;
   
   production: ProductionInfo;
   qa?: QAInspection;
+  qaInspections?: QAInspection[];
   coldChainLogs: ColdChainRecord[];
   documents: LotDocument[];
   validation?: ValidationResult;

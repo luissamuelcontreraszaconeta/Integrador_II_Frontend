@@ -3,13 +3,16 @@ export interface QaEvidenceItem {
   inspectionId: number;
   lotId: number;
   lotCode?: string;
+  originalFileName?: string;
   fileName: string;
   fileUrl: string;
   mimeType: string;
   fileSize: number;
+  sha256?: string;
   description?: string;
   uploadedBy: string;
   uploadedAt: string;
+  active?: boolean;
 }
 
 export interface QAInspectionData {
@@ -25,4 +28,32 @@ export interface QAInspectionData {
   observations: string;
   evidenceUrls?: string[];
   evidences?: QaEvidenceItem[];
+}
+
+export interface ColdChainIncident {
+  id: string;
+  lotId: string;
+  lotCode: string;
+  temperatureRead: number;
+  temperatureLimit: number;
+  conservationType: 'CONGELADO' | 'REFRIGERADO';
+  status: 'ACTIVE' | 'UNDER_REVIEW' | 'RESOLVED';
+  createdAt: string;
+  reviewedAt?: string;
+  resolvedAt?: string;
+  reviewedBy?: string;
+  resolvedBy?: string;
+  technicalJustification?: string;
+  actionsTaken?: string;
+  evidenceUrl?: string;
+  observations?: string;
+}
+
+export interface ThermalProfile {
+  conservationType: 'CONGELADO' | 'REFRIGERADO';
+  optimalMin: number;
+  optimalMax: number;
+  warningMax: number;
+  criticalMax: number;
+  normativeReference: string;
 }

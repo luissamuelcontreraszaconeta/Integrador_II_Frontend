@@ -158,16 +158,19 @@ export const LotsListPage: React.FC<LotsListPageProps> = ({ onNavigate }) => {
               onChange={(e) => setStatusFilter(e.target.value)}
               options={[
                 { value: 'ALL', label: 'Todos los estados' },
-                { value: 'DRAFT', label: 'Borrador' },
-                { value: 'PENDING_QA', label: 'Pendiente QA' },
-                { value: 'IN_QA', label: 'En QA' },
-                { value: 'OBSERVED', label: 'Observados' },
-                { value: 'VALIDATION_PENDING', label: 'Pendiente Validación' },
-                { value: 'READY_FOR_CERTIFICATION', label: 'Apto Certificación' },
-                { value: 'IN_CERTIFICATION', label: 'En Certificación' },
+                { value: 'REGISTERED', label: 'Registrado (Inicial)' },
+                { value: 'UNDER_QA_INSPECTION', label: 'En Inspección QA' },
+                { value: 'OBSERVED', label: 'Observado' },
+                { value: 'REJECTED', label: 'Rechazado' },
+                { value: 'READY_FOR_CERTIFICATION', label: 'Listo para Certificación' },
+                { value: 'IN_CERTIFICATION', label: 'En Trámite SANIPES' },
                 { value: 'CERTIFIED', label: 'Certificado SANIPES' },
-                { value: 'READY_FOR_DISPATCH', label: 'Apto Despacho' },
-                { value: 'DISPATCHED', label: 'Despachado' },
+                { value: 'READY_FOR_DISPATCH', label: 'Listo para Despacho' },
+                { value: 'DISPATCHED', label: 'Despachado (Exportado)' },
+                { value: 'CANCELLED', label: 'Anulado' },
+                // Legacy
+                { value: 'DRAFT', label: 'Borrador (Legacy)' },
+                { value: 'PENDING_QA', label: 'Pendiente QA (Legacy)' },
               ]}
             />
           </div>

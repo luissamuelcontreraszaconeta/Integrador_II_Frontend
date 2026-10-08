@@ -3,8 +3,9 @@ import { useLots } from '../../context/LotContext';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
+import { Select } from '../../components/ui/Select';
 import { AlertCard } from '../../components/ui/AlertCard';
-import { Truck, CheckCircle2, Lock, ShieldCheck, Send, Ship } from 'lucide-react';
+import { Truck, CheckCircle2, Lock, ShieldCheck, Send, Ship, AlertTriangle } from 'lucide-react';
 
 interface DispatchPageProps {
   lotId?: string;
@@ -14,7 +15,10 @@ interface DispatchPageProps {
 export const DispatchPage: React.FC<DispatchPageProps> = ({ lotId, onNavigate }) => {
   const { lots, authorizeDispatch } = useLots();
   
-  const selectedLotId = lotId || lots.find((l) => l.status === 'CERTIFIED' || l.status === 'READY_FOR_DISPATCH')?.id || lots[0]?.id;
+  const [selectedLotId, setSelectedLotId] = useState<string>(
+    lotId || lots.find((l) => l.status === 'READY_FOR_DISPATCH' || l.status === 'CERTIFIED')?.id || lots[0]?.id || ''
+  );
+  
   const lot = lots.find((l) => l.id === selectedLotId) || lots[0];
 
   const [destinationCountry, setDestinationCountry] = useState('España');
@@ -24,6 +28,7 @@ export const DispatchPage: React.FC<DispatchPageProps> = ({ lotId, onNavigate })
   const [shippingLine, setShippingLine] = useState('MSC Mediterranean Shipping Company');
   const [estimatedDeparture, setEstimatedDeparture] = useState('2026-09-05');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   if (!lot) {
     return <div className="p-8 text-slate-400">Sin lotes para despacho.</div>;
@@ -33,15 +38,19 @@ export const DispatchPage: React.FC<DispatchPageProps> = ({ lotId, onNavigate })
   const isProdComplete = true;
   const isQAConforme = lot.qa?.organolepticResult === 'CONFORME';
   const isColdChainConforme = lot.coldChainLogs.length > 0 && !lot.coldChainLogs.some((c) => c.status === 'CRITICAL');
-  const isDocsComplete = lot.documents.length >= 2;
+  const isDocsComplete = (lot.documents?.length || 0) >= 2;
   const isCertApproved = lot.status === 'CERTIFIED' || lot.status === 'READY_FOR_DISPATCH' || lot.status === 'DISPATCHED';
 
   const isEligible = isProdComplete && isQAConforme && isColdChainConforme && isDocsComplete && isCertApproved;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isEligible) return;
+    if (!isEligible) {
+      setErrorMsg('BLOQUEO P0: No se puede autorizar el despacho sin cumplir todos los requisitos sanitarios.');
+      return;
+    }
     setIsSubmitting(true);
+    setErrorMsg(null);
     try {
       await authorizeDispatch(lot.id, {
         destinationCountry,
@@ -52,6 +61,8 @@ export const DispatchPage: React.FC<DispatchPageProps> = ({ lotId, onNavigate })
         estimatedDeparture,
       });
       onNavigate(`/lots/${lot.id}`);
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Error al autorizar despacho');
     } finally {
       setIsSubmitting(false);
     }
@@ -68,6 +79,31 @@ export const DispatchPage: React.FC<DispatchPageProps> = ({ lotId, onNavigate })
           { label: 'Despacho' },
         ]}
       />
+
+      {/* Lot Selector */}
+      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex items-center gap-3">
+        <Truck className="w-5 h-5 text-[#0F6CBD] shrink-0" />
+        <Select
+          label="Seleccionar Lote para Despacho"
+          value={lot.id}
+          onChange={(e) => {
+            setSelectedLotId(e.target.value);
+            setErrorMsg(null);
+          }}
+          options={lots.map((l) => ({
+            value: l.id,
+            label: `${l.code} - ${l.production?.productName || 'Producto'} [${l.status}]`,
+          }))}
+        />
+      </div>
+
+      {errorMsg && (
+        <AlertCard
+          type="error"
+          title="Error en Despacho"
+          message={errorMsg}
+        />
+      )}
 
       {/* Strict Gatekeeping Matrix */}
       <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
@@ -93,7 +129,7 @@ export const DispatchPage: React.FC<DispatchPageProps> = ({ lotId, onNavigate })
           </div>
           <div className={`p-3 rounded-lg border flex items-center justify-between ${isCertApproved ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-rose-50 border-rose-200 text-rose-700'}`}>
             <span>Certificado SANIPES</span>
-            {isCertApproved ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <Lock className="w-4 h-4" />}
+            {isCertApproved ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <Lock className="w-4 h-4 text-rose-600" />}
           </div>
         </div>
 
@@ -107,7 +143,7 @@ export const DispatchPage: React.FC<DispatchPageProps> = ({ lotId, onNavigate })
           <AlertCard
             type="error"
             title="DESPACHO BLOQUEADO POR REQUISITOS FALTANTES"
-            message="El sistema ExporTrace ha bloqueado la salida de planta. Debe completar la auditoría QA, el registro térmico y el certificado SANIPES."
+            message="El sistema ExporTrace ha bloqueado la salida de planta. Se requiere dictamen QA Conforme y Certificado Sanitario Oficial emitido por SANIPES."
           />
         )}
       </div>
