@@ -3,6 +3,11 @@ import { authService } from '../auth/auth.service';
 
 const TOKEN_KEY = 'exportrace_jwt_token';
 
+export interface ApiError extends Error {
+  status?: number;
+  fieldErrors?: Record<string, string>;
+}
+
 export async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {}
@@ -45,15 +50,24 @@ export async function apiRequest<T>(
 
   if (!response.ok) {
     let errorMessage = `Error HTTP ${response.status}: ${response.statusText}`;
+    let fieldErrors: Record<string, string> | undefined;
     try {
       const errorData = await response.json();
       if (errorData.message) {
         errorMessage = errorData.message;
       }
+      if (errorData.errors && typeof errorData.errors === 'object') {
+        fieldErrors = errorData.errors as Record<string, string>;
+      }
     } catch {
       // JSON parse error fallback
     }
-    throw new Error(errorMessage);
+    const apiError: ApiError = new Error(errorMessage);
+    apiError.status = response.status;
+    if (fieldErrors) {
+      apiError.fieldErrors = fieldErrors;
+    }
+    throw apiError;
   }
 
   return response.json() as Promise<T>;

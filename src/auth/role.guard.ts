@@ -20,8 +20,15 @@ export const roleGuard = {
     // 2. Administrator role (Organizational / Business Admin)
     if (role === 'ADMINISTRADOR') return true;
 
-    // Universal landing & notifications
-    if (path === '/dashboard' || path === '/notifications') return true;
+    // Universal landing, notifications & support center (available to all authenticated active users)
+    if (
+      path === '/dashboard' ||
+      path === '/notifications' ||
+      path === '/support' ||
+      path.startsWith('/support/')
+    ) {
+      return true;
+    }
 
     // Admin module subroutes (Business Administration)
     if (path === '/admin' || path === '/dashboard/admin') {

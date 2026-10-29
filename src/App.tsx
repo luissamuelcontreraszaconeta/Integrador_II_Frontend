@@ -43,6 +43,11 @@ import { SuperAdminSettingsPage } from './pages/SuperAdmin/SuperAdminSettingsPag
 // Notifications Center
 import { NotificationsPage } from './pages/Notifications/NotificationsPage';
 
+// Support Center & Incidents (Fase B)
+import { SupportCenterPage } from './pages/Support/SupportCenterPage';
+import { MyIncidentsPage } from './pages/Support/MyIncidentsPage';
+import { IncidentDetailPage } from './pages/Support/IncidentDetailPage';
+
 const MainAppRouter: React.FC = () => {
   const { currentRole, currentUser } = useAuth();
   const isAuthenticated = authGuard.isAuthenticated();
@@ -249,6 +254,18 @@ const MainAppRouter: React.FC = () => {
     // Notifications Center
     if (currentPath === '/notifications') {
       return <NotificationsPage onNavigate={navigate} />;
+    }
+
+    // Support Center & Incidents (Fase B)
+    if (currentPath === '/support') {
+      return <SupportCenterPage onNavigate={navigate} />;
+    }
+    if (currentPath === '/support/incidents') {
+      return <MyIncidentsPage onNavigate={navigate} />;
+    }
+    if (currentPath.startsWith('/support/incidents/')) {
+      const id = currentPath.replace('/support/incidents/', '');
+      return <IncidentDetailPage incidentId={id} onNavigate={navigate} />;
     }
 
     // Default Fallback
