@@ -1,0 +1,34 @@
+name: ExporTrace CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    name: Frontend CI (Node 24, TypeScript & Vite)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies reproducibly (npm ci)
+        run: npm ci
+
+      - name: Typecheck (tsc -b) and Build Production Bundle (vite build)
+        run: npm run build
