@@ -20,6 +20,7 @@ import {
   X,
 } from 'lucide-react';
 import { NotificationBell } from '../components/notifications/NotificationBell';
+import { SupportButton } from '../components/support/SupportButton';
 
 interface SuperAdminLayoutProps {
   currentPath: string;
@@ -276,6 +277,7 @@ export const SuperAdminLayout: React.FC<SuperAdminLayoutProps> = ({
 
           <div className="flex items-center gap-3">
             <NotificationBell onNavigate={onNavigate} />
+            <SupportButton onNavigate={onNavigate} />
             <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
               Modo SuperAdmin Activo

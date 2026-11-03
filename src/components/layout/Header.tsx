@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Anchor, LogOut, Shield, Package, UserCheck, Award, BarChart3, Menu } from 'lucide-react';
 import { UserRole } from '../../types/user';
 import { NotificationBell } from '../notifications/NotificationBell';
+import { SupportButton } from '../support/SupportButton';
 
 interface HeaderProps {
   onToggleMobileSidebar?: () => void;
@@ -98,6 +99,9 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileSidebar, onNavigat
         <div className="flex items-center gap-3 sm:gap-4">
           {/* Notification Bell with Dropdown */}
           <NotificationBell onNavigate={onNavigate} />
+
+          {/* Support Center Quick Access */}
+          <SupportButton onNavigate={onNavigate} />
 
           {/* User Profile */}
           <div className="flex items-center gap-3 pl-1 border-l border-slate-200/80">

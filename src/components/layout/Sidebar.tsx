@@ -17,6 +17,8 @@ import {
   Users,
   Layers,
   History,
+  LifeBuoy,
+  ClipboardList,
   X
 } from 'lucide-react';
 
@@ -180,6 +182,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
       requiredPermission: 'AUDIT_VIEW',
       section: 'ADMINISTRACIÓN RBAC',
     },
+    {
+      id: 'support-center',
+      path: '/support',
+      label: 'Centro de Soporte',
+      icon: <LifeBuoy className="w-4 h-4 shrink-0" />,
+      roles: ['ADMINISTRADOR', 'PRODUCCION', 'QA', 'LOGISTICA', 'GERENCIA'],
+      section: 'SOPORTE',
+    },
+    {
+      id: 'support-my-incidents',
+      path: '/support/incidents',
+      label: 'Mis Incidencias',
+      icon: <ClipboardList className="w-4 h-4 shrink-0" />,
+      roles: ['ADMINISTRADOR', 'PRODUCCION', 'QA', 'LOGISTICA', 'GERENCIA'],
+      section: 'SOPORTE',
+    },
   ];
 
   const visibleNavItems = navItems.filter((item) => {
@@ -228,6 +246,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               currentPath === item.path ||
               (item.path !== '/dashboard' &&
                 item.path !== '/admin' &&
+                item.path !== '/support' &&
                 !item.path.startsWith('/dashboard/') &&
                 currentPath.startsWith(item.path));
 
