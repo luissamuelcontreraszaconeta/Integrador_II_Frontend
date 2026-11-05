@@ -13,7 +13,7 @@ interface CertificationTrackerPageProps {
 }
 
 export const CertificationTrackerPage: React.FC<CertificationTrackerPageProps> = ({ onNavigate }) => {
-  const { lots, initiateCertification, approveCertification, getCertificate } = useLots();
+  const { lots, initiateCertification, approveCertification, getCertificate, refreshData } = useLots();
   
   const eligibleLots = lots.filter(
     (l) => l.status === 'READY_FOR_CERTIFICATION' || l.status === 'IN_CERTIFICATION' || l.status === 'CERTIFIED' || l.status === 'READY_FOR_DISPATCH'
@@ -23,6 +23,16 @@ export const CertificationTrackerPage: React.FC<CertificationTrackerPageProps> =
   const [cert, setCert] = useState<SanitaryCertificate | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  React.useEffect(() => {
+    refreshData();
+  }, [refreshData]);
+
+  React.useEffect(() => {
+    if ((!selectedLotId || !lots.some((l) => l.id === selectedLotId)) && lots.length > 0) {
+      setSelectedLotId(eligibleLots[0]?.id || lots[0].id);
+    }
+  }, [lots, eligibleLots, selectedLotId]);
 
   const selectedLot = lots.find((l) => l.id === selectedLotId);
 

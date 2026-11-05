@@ -40,6 +40,13 @@ export const LotProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [loading, setLoading] = useState<boolean>(true);
 
   const refreshData = useCallback(async () => {
+    const activeToken = localStorage.getItem('exportrace_jwt_token');
+    if (!activeToken) {
+      setLots([]);
+      setAuditLogs([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const fetchedLots = await apiService.getLots();
@@ -54,8 +61,14 @@ export const LotProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   useEffect(() => {
+    if (!currentUser) {
+      setLots([]);
+      setAuditLogs([]);
+      setLoading(false);
+      return;
+    }
     refreshData();
-  }, [refreshData]);
+  }, [currentUser?.id, currentUser?.email, currentUser?.role, refreshData]);
 
   const getLotById = (id: string) => {
     return lots.find((l) => l.id === id || l.code === id);

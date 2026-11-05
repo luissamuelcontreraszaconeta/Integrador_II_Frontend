@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import {
   LifeBuoy,
-  AlertCircle,
+  CircleAlert,
+  LayoutGrid,
   ClipboardList,
+  FileClock,
   HelpCircle,
-  Clock,
-  ShieldCheck,
   ArrowRight,
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
@@ -17,23 +17,25 @@ interface SupportCenterPageProps {
 
 const FAQ_ITEMS = [
   {
-    question: '¿Cómo se asigna la prioridad de mi incidencia?',
+    question: '¿Cuándo debo reportar una incidencia o solicitar un servicio?',
     answer:
-      'El sistema calcula automáticamente la prioridad (P1 a P4) en función del impacto operativo y si puedes continuar con tu trabajo.',
+      'Reporta una incidencia ante fallos técnicos o interrupciones operativas. Utiliza el Catálogo de servicios para consultas de lotes, corrección de datos o gestión de accesos.',
   },
   {
-    question: '¿Dónde puedo consultar el avance de mi reporte?',
+    question: '¿Cómo se calculan los tiempos de atención (SLA)?',
     answer:
-      'En la sección "Mis incidencias" encontrarás el código único asignado (INC-2026-XXXXXX), su estado actual y el tiempo objetivo estimado de atención.',
+      'En incidencias, la prioridad se calcula automáticamente según el impacto y continuidad. En solicitudes de servicio, cada servicio del catálogo define su propio SLA objetivo.',
   },
   {
-    question: '¿Puedo vincular un lote específico a mi reporte?',
+    question: '¿Dónde reviso el seguimiento de mis registros?',
     answer:
-      'Sí. Al reportar una incidencia puedes seleccionar opcionalmente el lote relacionado para agilizar la revisión técnica.',
+      'Desde este Centro de Soporte puedes consultar por separado el avance de "Mis incidencias" (código INC) y "Mis solicitudes" (código SR).',
   },
 ];
 
-export const SupportCenterPage: React.FC<SupportCenterPageProps> = ({ onNavigate }) => {
+export const SupportCenterPage: React.FC<SupportCenterPageProps> = ({
+  onNavigate,
+}) => {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   const navigateTo = (path: string) => {
@@ -44,6 +46,49 @@ export const SupportCenterPage: React.FC<SupportCenterPageProps> = ({ onNavigate
       window.dispatchEvent(new PopStateEvent('popstate'));
     }
   };
+
+  const mainAccessCards = [
+    {
+      id: 'report-incident',
+      title: 'Reportar incidencia',
+      description:
+        'Comunica fallos técnicos, errores operativos o interrupciones del sistema.',
+      icon: <CircleAlert className="w-6 h-6" aria-hidden="true" />,
+      actionLabel: 'Reportar incidencia',
+      onClick: () => setIsReportModalOpen(true),
+      isPrimaryAction: true,
+    },
+    {
+      id: 'service-catalog',
+      title: 'Catálogo de servicios',
+      description:
+        'Solicita información de lotes, corrección de datos, creación de cuentas o cambios de permisos.',
+      icon: <LayoutGrid className="w-6 h-6" aria-hidden="true" />,
+      actionLabel: 'Explorar catálogo',
+      onClick: () => navigateTo('/support/catalog'),
+      isPrimaryAction: false,
+    },
+    {
+      id: 'my-incidents',
+      title: 'Mis incidencias',
+      description:
+        'Consulta el estado, prioridad y seguimiento de las incidencias registradas.',
+      icon: <ClipboardList className="w-6 h-6" aria-hidden="true" />,
+      actionLabel: 'Ver mis incidencias',
+      onClick: () => navigateTo('/support/incidents'),
+      isPrimaryAction: false,
+    },
+    {
+      id: 'my-requests',
+      title: 'Mis solicitudes',
+      description:
+        'Revisa el avance, aprobaciones y estado de atención de tus solicitudes de servicio.',
+      icon: <FileClock className="w-6 h-6" aria-hidden="true" />,
+      actionLabel: 'Ver mis solicitudes',
+      onClick: () => navigateTo('/support/requests'),
+      isPrimaryAction: false,
+    },
+  ];
 
   return (
     <div className="space-y-6 text-left">
@@ -56,13 +101,13 @@ export const SupportCenterPage: React.FC<SupportCenterPageProps> = ({ onNavigate
             </div>
             <div>
               <span className="text-[11px] font-bold uppercase tracking-widest text-[#0F6CBD] block">
-                Asistencia Operativa y Técnica
+                Soporte ExporTrace
               </span>
               <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5">
-                CENTRO DE SOPORTE
+                Centro de Soporte
               </h1>
               <p className="text-sm text-slate-600 mt-1 max-w-2xl leading-relaxed">
-                Reporta problemas relacionados con el funcionamiento de ExporTrace y consulta el estado de tus solicitudes.
+                Encuentra ayuda, reporta incidencias o solicita servicios relacionados con ExporTrace.
               </p>
             </div>
           </div>
@@ -70,15 +115,15 @@ export const SupportCenterPage: React.FC<SupportCenterPageProps> = ({ onNavigate
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <Button
               variant="secondary"
-              onClick={() => navigateTo('/support/incidents')}
-              icon={<ClipboardList className="w-4 h-4" />}
+              onClick={() => navigateTo('/support/catalog')}
+              icon={<LayoutGrid className="w-4 h-4" />}
             >
-              Ver mis incidencias
+              Catálogo de servicios
             </Button>
             <Button
               variant="primary"
               onClick={() => setIsReportModalOpen(true)}
-              icon={<AlertCircle className="w-4 h-4" />}
+              icon={<CircleAlert className="w-4 h-4" />}
             >
               Reportar incidencia
             </Button>
@@ -86,63 +131,47 @@ export const SupportCenterPage: React.FC<SupportCenterPageProps> = ({ onNavigate
         </div>
       </div>
 
-      {/* Tarjetas Principales de Acción */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Tarjeta 1: REPORTAR INCIDENCIA */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs hover:border-[#0F6CBD]/40 transition-all flex flex-col justify-between">
-          <div className="space-y-3">
-            <div className="w-11 h-11 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 flex items-center justify-center">
-              <AlertCircle className="w-6 h-6" aria-hidden="true" />
+      {/* 4 Tarjetas Principales de Acceso */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
+        {mainAccessCards.map((card) => (
+          <div
+            key={card.id}
+            role="button"
+            tabIndex={0}
+            onClick={card.onClick}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                card.onClick();
+              }
+            }}
+            className="group bg-white rounded-xl border border-slate-200 p-5 shadow-2xs hover:shadow-md hover:-translate-y-0.5 hover:border-[#0F6CBD]/40 transition-all duration-200 cursor-pointer flex flex-col justify-between h-full text-left focus:outline-hidden focus:ring-2 focus:ring-[#0F6CBD]/30"
+          >
+            <div className="space-y-3.5">
+              <div className="w-11 h-11 rounded-xl bg-sky-50 border border-sky-100 text-[#0F6CBD] group-hover:bg-[#0F4C81] group-hover:text-white group-hover:border-[#0F4C81] transition-colors duration-200 flex items-center justify-center">
+                {card.icon}
+              </div>
+              <div className="space-y-1.5">
+                <h2 className="text-base font-bold text-slate-900 group-hover:text-[#0F4C81] transition-colors">
+                  {card.title}
+                </h2>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  {card.description}
+                </p>
+              </div>
             </div>
-            <h2 className="text-base font-bold text-slate-900 uppercase tracking-wide">
-              REPORTAR INCIDENCIA
-            </h2>
-            <p className="text-sm text-slate-600 leading-relaxed">
-              Comunica un problema que afecte el uso del sistema.
-            </p>
-          </div>
-          <div className="pt-5 mt-5 border-t border-slate-100 flex items-center justify-between">
-            <span className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-teal-600" aria-hidden="true" />
-              Priorización automática
-            </span>
-            <Button
-              variant="primary"
-              onClick={() => setIsReportModalOpen(true)}
-              icon={<AlertCircle className="w-4 h-4" />}
-            >
-              Reportar incidencia
-            </Button>
-          </div>
-        </div>
 
-        {/* Tarjeta 2: MIS INCIDENCIAS */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs hover:border-[#0F6CBD]/40 transition-all flex flex-col justify-between">
-          <div className="space-y-3">
-            <div className="w-11 h-11 rounded-xl bg-sky-50 border border-sky-100 text-[#0F6CBD] flex items-center justify-center">
-              <ClipboardList className="w-6 h-6" aria-hidden="true" />
+            <div className="pt-4 mt-5 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-xs font-semibold text-[#0F6CBD] group-hover:text-[#0F4C81] flex items-center gap-1.5">
+                {card.actionLabel}
+              </span>
+              <ArrowRight
+                className="w-4 h-4 text-slate-400 group-hover:text-[#0F6CBD] group-hover:translate-x-0.5 transition-all"
+                aria-hidden="true"
+              />
             </div>
-            <h2 className="text-base font-bold text-slate-900 uppercase tracking-wide">
-              MIS INCIDENCIAS
-            </h2>
-            <p className="text-sm text-slate-600 leading-relaxed">
-              Consulta tus reportes, prioridades y estado de atención.
-            </p>
           </div>
-          <div className="pt-5 mt-5 border-t border-slate-100 flex items-center justify-between">
-            <span className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
-              <Clock className="w-4 h-4 text-[#0F6CBD]" aria-hidden="true" />
-              Seguimiento por código INC
-            </span>
-            <Button
-              variant="secondary"
-              onClick={() => navigateTo('/support/incidents')}
-              icon={<ArrowRight className="w-4 h-4" />}
-            >
-              Ver mis incidencias
-            </Button>
-          </div>
-        </div>
+        ))}
       </div>
 
       {/* Sección Visual de Ayuda: Preguntas Frecuentes */}
@@ -156,7 +185,7 @@ export const SupportCenterPage: React.FC<SupportCenterPageProps> = ({ onNavigate
               Preguntas frecuentes
             </h2>
             <p className="text-xs text-slate-500">
-              Información rápida sobre el registro y atención de solicitudes en ExporTrace
+              Guía rápida sobre incidencias y catálogo de servicios en ExporTrace
             </p>
           </div>
         </div>

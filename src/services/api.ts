@@ -1,172 +1,230 @@
-import { Lot, QAInspection, ColdChainRecord, ProductionInfo } from '../types/lot';
-import { SanitaryCertificate, ExpedienteDigital } from '../types/certification';
-import { AuditLog, UserRole } from '../types/user';
-import { MOCK_LOTS, MOCK_CERTIFICATES } from '../data/mockData';
+import { Lot, QAInspection, ColdChainRecord, ProductionInfo, LotDocument } from '../types/lot';
+import { SanitaryCertificate } from '../types/certification';
+import { AuditLog } from '../types/user';
+import { apiRequest } from './apiClient';
 
 const LOTS_STORAGE_KEY = 'exportrace_lots_v1';
 const CERTS_STORAGE_KEY = 'exportrace_certs_v1';
 const AUDIT_STORAGE_KEY = 'exportrace_audit_v1';
 
-// Initializer
-const initializeStorage = () => {
-  if (!localStorage.getItem(LOTS_STORAGE_KEY)) {
-    localStorage.setItem(LOTS_STORAGE_KEY, JSON.stringify(MOCK_LOTS));
-  }
-  if (!localStorage.getItem(CERTS_STORAGE_KEY)) {
-    localStorage.setItem(CERTS_STORAGE_KEY, JSON.stringify(MOCK_CERTIFICATES));
-  }
-  if (!localStorage.getItem(AUDIT_STORAGE_KEY)) {
-    const initialLogs: AuditLog[] = [
-      {
-        id: 'log-001',
-        timestamp: new Date().toISOString(),
-        userId: 'usr-ops',
-        userName: 'Renzo Alva',
-        userRole: 'PRODUCCION',
-        action: 'REGISTRO_LOTE',
-        details: 'Se registró el lote EXP-2026-001 (Pota congelada 26.5 TN)',
-        lotCode: 'EXP-2026-001',
-      },
-      {
-        id: 'log-002',
-        timestamp: new Date(Date.now() - 86400000).toISOString(),
-        userId: 'usr-qa',
-        userName: 'Dra. María Elena Quispe',
-        userRole: 'QA',
-        action: 'INSPECCION_QA',
-        details: 'Inspección organoléptica aprobada para lote EXP-2026-001',
-        lotCode: 'EXP-2026-001',
-      },
-    ];
-    localStorage.setItem(AUDIT_STORAGE_KEY, JSON.stringify(initialLogs));
-  }
+export const clearOperationalCache = () => {
+  localStorage.removeItem(LOTS_STORAGE_KEY);
+  localStorage.removeItem(CERTS_STORAGE_KEY);
+  localStorage.removeItem(AUDIT_STORAGE_KEY);
 };
 
-initializeStorage();
+// Clear any legacy mock localStorage entries so all users read from the central backend database
+clearOperationalCache();
+
+function mapBackendLotToFrontend(raw: any): Lot {
+  const id = String(raw.id ?? '');
+  const code = raw.code || raw.codigo || `EXP-${id}`;
+  const status = raw.status || raw.estado || 'REGISTERED';
+  const createdAt = raw.createdAt || raw.fechaCreacion || new Date().toISOString();
+  const updatedAt = raw.updatedAt || raw.fechaActualizacion || createdAt;
+  const createdBy = raw.createdBy || raw.inspeccionadoPor || 'Operaciones Planta';
+
+  const prod = raw.production || {};
+  const production: ProductionInfo = {
+    productName: prod.productName || 'Producto Hidrobiológico',
+    productType: prod.productType || 'POTA_CONGELADA_BLOCK',
+    scientificName: prod.scientificName || 'Dosidicus gigas',
+    quantity: Number(prod.quantity ?? 0),
+    unit: prod.unit || 'TN',
+    registrationDate: prod.registrationDate || createdAt.split('T')[0],
+    supplier: prod.supplier || 'Asociación Pesquera Artesanal',
+    vesselName: prod.vesselName || 'E/P Don Luis II',
+    receptionDate: prod.receptionDate || createdAt.split('T')[0],
+    portOfOrigin: prod.portOfOrigin || 'Planta Paita',
+    processingType: prod.processingType || 'Bloque Congelado Rápido (-40°C)',
+    productionLine: prod.productionLine || 'Línea Principal',
+    shiftSupervisor: prod.shiftSupervisor || createdBy,
+    notes: prod.notes || '',
+  };
+
+  const coldChainLogs: ColdChainRecord[] = Array.isArray(raw.coldChainLogs)
+    ? raw.coldChainLogs.map((c: any) => ({
+        id: String(c.id ?? `cc-${Math.random()}`),
+        recordedAt: c.recordedAt || c.fechaHora || createdAt,
+        time:
+          c.time ||
+          (c.recordedAt || c.fechaHora
+            ? new Date(c.recordedAt || c.fechaHora).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            : '00:00'),
+        temperature: Number(c.temperature ?? c.temperaturaCelsius ?? -20),
+        location: c.location || c.ubicacionCamara || 'Cámara Frigorífica',
+        responsible: c.responsible || c.responsableNombre || 'QA Frío',
+        status: (c.status || c.estadoMedicion || 'NORMAL') as 'NORMAL' | 'WARNING' | 'CRITICAL',
+        observations: c.observations || c.observaciones,
+      }))
+    : [];
+
+  const documents: LotDocument[] = Array.isArray(raw.documents)
+    ? raw.documents.map((d: any) => ({
+        id: String(d.id ?? `doc-${Math.random()}`),
+        name: d.name || d.nombre || 'Documento.pdf',
+        type: d.type || d.tipo || 'DECLARACION_JURADA',
+        uploadedAt: d.uploadedAt || d.fechaSubida || createdAt,
+        uploadedBy: d.uploadedBy || d.subidoPor || createdBy,
+        fileUrl: d.fileUrl || d.urlArchivo || '#',
+        size: d.size || '1.0 MB',
+        required: d.required ?? true,
+      }))
+    : [];
+
+  const defaultTimeline: Lot['timeline'] = [
+    { stage: 'PRODUCCION', status: 'COMPLETED', updatedAt: createdAt },
+    {
+      stage: 'QA',
+      status:
+        raw.qa?.organolepticResult === 'CONFORME'
+          ? 'COMPLETED'
+          : raw.qa
+          ? 'OBSERVED'
+          : 'IN_PROGRESS',
+      updatedAt,
+    },
+    {
+      stage: 'COLD_CHAIN',
+      status: coldChainLogs.length > 0 ? 'COMPLETED' : 'PENDING',
+      updatedAt: coldChainLogs[0]?.recordedAt || '',
+    },
+    {
+      stage: 'VALIDACION',
+      status: raw.validation?.isValidated ? 'COMPLETED' : 'PENDING',
+      updatedAt: raw.validation?.validatedAt || '',
+    },
+    {
+      stage: 'CERTIFICACION',
+      status:
+        status === 'CERTIFIED' || status === 'READY_FOR_DISPATCH' || status === 'DISPATCHED'
+          ? 'COMPLETED'
+          : status === 'IN_CERTIFICATION'
+          ? 'IN_PROGRESS'
+          : 'PENDING',
+      updatedAt: '',
+    },
+    {
+      stage: 'DESPACHO',
+      status:
+        status === 'DISPATCHED'
+          ? 'COMPLETED'
+          : status === 'READY_FOR_DISPATCH'
+          ? 'IN_PROGRESS'
+          : 'PENDING',
+      updatedAt: '',
+    },
+  ];
+
+  return {
+    id,
+    code,
+    qrToken: raw.qrToken,
+    status,
+    version: raw.version,
+    createdAt,
+    updatedAt,
+    createdBy,
+    production,
+    qa: raw.qa || undefined,
+    qaInspections: raw.qaInspections || [],
+    coldChainLogs,
+    documents,
+    validation: raw.validation || undefined,
+    certificationId: raw.certificationId || (status === 'IN_CERTIFICATION' || status === 'CERTIFIED' || status === 'READY_FOR_DISPATCH' || status === 'DISPATCHED' ? id : undefined),
+    dispatchInfo: raw.dispatchInfo || undefined,
+    timeline: Array.isArray(raw.timeline) && raw.timeline.length > 0 ? raw.timeline : defaultTimeline,
+  };
+}
+
+function mapBackendCertToFrontend(raw: any, fallbackLotId: string, fallbackLotCode?: string): SanitaryCertificate {
+  const isApproved = raw.estado === 'APROBADO' || raw.status === 'APPROVED';
+  const lotId = String(raw.lotId || fallbackLotId);
+  const lotCode = raw.lotCode || fallbackLotCode || `Lote #${lotId}`;
+  const dossier = raw.numeroCertificado || raw.sanipesDossierNumber || `SANIPES-2026-${lotId}`;
+
+  return {
+    id: lotId,
+    lotId,
+    lotCode,
+    sanipesDossierNumber: dossier,
+    submissionDate: raw.fechaSolicitud ? String(raw.fechaSolicitud).split('T')[0] : new Date().toISOString().split('T')[0],
+    status: isApproved ? 'APPROVED' : raw.estado === 'RECHAZADO' ? 'REJECTED' : 'IN_EVALUATION',
+    sanitaryInspector: 'Ing. Evaluador SANIPES',
+    evaluationOffice: 'Oficina Desconcentrada SANIPES - Paita',
+    certificateNumber: isApproved ? dossier : undefined,
+    issuedDate: raw.fechaEmision ? String(raw.fechaEmision).split('T')[0] : undefined,
+    expirationDate: raw.fechaVencimiento ? String(raw.fechaVencimiento).split('T')[0] : undefined,
+    requirements: [
+      { id: 'r1', code: 'REQ-01', name: 'Validación de Trazabilidad ExporTrace', status: 'COMPLIANT', verifiedBy: 'Sistema ExporTrace' },
+      { id: 'r2', code: 'REQ-02', name: 'Inspección Organoléptica de Lote', status: 'COMPLIANT', verifiedBy: 'QA ExporTrace' },
+      { id: 'r3', code: 'REQ-03', name: 'Auditoría Físico-Química y Microbiológica', status: isApproved ? 'COMPLIANT' : 'PENDING' },
+      { id: 'r4', code: 'REQ-04', name: 'Verificación HACCP de Almacenamiento Frío', status: isApproved ? 'COMPLIANT' : 'PENDING' },
+    ],
+    observations: raw.observaciones ? [raw.observaciones] : ['Expediente digital registrado ante SANIPES.'],
+  };
+}
 
 export const apiService = {
   // --- LOTS ---
   getLots: async (): Promise<Lot[]> => {
-    const data = localStorage.getItem(LOTS_STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
+    const token = localStorage.getItem('exportrace_jwt_token');
+    if (!token) return [];
+    const data = await apiRequest<any[]>('/lots');
+    return Array.isArray(data) ? data.map(mapBackendLotToFrontend) : [];
   },
 
   getLotById: async (id: string): Promise<Lot | null> => {
-    const lots = await apiService.getLots();
-    return lots.find((l) => l.id === id || l.code === id) || null;
+    if (!id) return null;
+    try {
+      const endpoint = /^\d+$/.test(id) ? `/lots/${id}` : `/lots/code/${encodeURIComponent(id)}`;
+      const data = await apiRequest<any>(endpoint);
+      return data ? mapBackendLotToFrontend(data) : null;
+    } catch {
+      return null;
+    }
   },
 
   createLot: async (prodInfo: Omit<ProductionInfo, 'registrationDate'>, authorName: string): Promise<Lot> => {
-    const lots = await apiService.getLots();
-    const count = lots.length + 1;
-    const codeNumber = String(count).padStart(3, '0');
-    const code = `EXP-2026-${codeNumber}`;
-    const now = new Date().toISOString();
+    const qty = Number(prodInfo.quantity) > 0 ? Number(prodInfo.quantity) : 1;
+    const pesoNetoKg = prodInfo.unit === 'TN' ? qty * 1000.0 : qty;
+    const cantidadEmpaques = Math.max(1, Math.round(qty));
 
-    const randomHash = Math.random().toString(36).substring(2, 10).toUpperCase();
-    const qrToken = `EXP2026${codeNumber}${randomHash}`;
-
-    const newLot: Lot = {
-      id: `lot-${Date.now()}`,
-      code,
-      qrToken,
-      status: 'REGISTERED',
-      createdAt: now,
-      updatedAt: now,
-      createdBy: authorName,
-      production: {
-        ...prodInfo,
-        registrationDate: new Date().toISOString().split('T')[0],
-      },
-      coldChainLogs: [],
-      documents: [
-        {
-          id: `doc-${Date.now()}-1`,
-          name: `Declaracion_Jurada_Origen_${code}.pdf`,
-          type: 'DECLARACION_JURADA',
-          uploadedAt: now,
-          uploadedBy: authorName,
-          fileUrl: '#',
-          size: '1.2 MB',
-          required: true,
-        },
-        {
-          id: `doc-${Date.now()}-2`,
-          name: `Ticket_Pesaje_${code}.pdf`,
-          type: 'TICKET_PESAJE',
-          uploadedAt: now,
-          uploadedBy: authorName,
-          fileUrl: '#',
-          size: '920 KB',
-          required: true,
-        },
-      ],
-      timeline: [
-        { stage: 'PRODUCCION', status: 'COMPLETED', updatedAt: now },
-        { stage: 'QA', status: 'IN_PROGRESS', updatedAt: now },
-        { stage: 'COLD_CHAIN', status: 'PENDING', updatedAt: '' },
-        { stage: 'VALIDACION', status: 'PENDING', updatedAt: '' },
-        { stage: 'CERTIFICACION', status: 'PENDING', updatedAt: '' },
-        { stage: 'DESPACHO', status: 'PENDING', updatedAt: '' },
-      ],
+    const payload = {
+      producto: prodInfo.productType || prodInfo.productName,
+      especie: prodInfo.scientificName,
+      cantidadEmpaques,
+      tipoEmpaque: prodInfo.unit || 'TN',
+      pesoNetoKg,
+      plantaProcesamiento: prodInfo.portOfOrigin || 'Planta Paita #01',
+      lineaProcesamiento: prodInfo.productionLine || 'Línea Principal',
+      fechaProduccion: prodInfo.receptionDate || new Date().toISOString().split('T')[0],
+      inspeccionadoPor: prodInfo.shiftSupervisor || authorName,
+      proveedor: prodInfo.supplier,
+      embarcacion: prodInfo.vesselName,
+      observaciones: prodInfo.notes,
+      temperaturaInicial: -22.5,
     };
 
-    lots.unshift(newLot);
-    localStorage.setItem(LOTS_STORAGE_KEY, JSON.stringify(lots));
-
-    await apiService.addAuditLog({
-      userId: 'usr-ops',
-      userName: authorName,
-      userRole: 'PRODUCCION',
-      action: 'REGISTRO_LOTE',
-      details: `Registrado lote ${code} - ${prodInfo.productName} (${prodInfo.quantity} ${prodInfo.unit})`,
-      lotId: newLot.id,
-      lotCode: code,
+    const created = await apiRequest<any>('/lots', {
+      method: 'POST',
+      body: JSON.stringify(payload),
     });
 
-    return newLot;
+    return mapBackendLotToFrontend(created);
   },
 
   updateQAInspection: async (lotId: string, qaData: QAInspection, inspectorName: string): Promise<Lot> => {
-    const lots = await apiService.getLots();
-    const index = lots.findIndex((l) => l.id === lotId);
-    if (index === -1) throw new Error('Lote no encontrado');
-
-    const lot = lots[index];
-    const now = new Date().toISOString();
-
-    const isConforme = qaData.organolepticResult === 'CONFORME';
-    const newStatus = isConforme ? 'READY_FOR_CERTIFICATION' : 'OBSERVED';
-
-    lot.qa = {
-      ...qaData,
-      inspectedAt: now,
-      inspectorName,
-    };
-    lot.status = newStatus;
-    lot.updatedAt = now;
-
-    // Update timeline
-    const qaStageIndex = lot.timeline.findIndex((t) => t.stage === 'QA');
-    if (qaStageIndex !== -1) {
-      lot.timeline[qaStageIndex].status = isConforme ? 'COMPLETED' : 'OBSERVED';
-      lot.timeline[qaStageIndex].updatedAt = now;
-    }
-
-    lots[index] = lot;
-    localStorage.setItem(LOTS_STORAGE_KEY, JSON.stringify(lots));
-
-    await apiService.addAuditLog({
-      userId: 'usr-qa',
-      userName: inspectorName,
-      userRole: 'QA',
-      action: 'INSPECCION_QA',
-      details: `Inspección QA para ${lot.code}: Resultado ${qaData.organolepticResult}`,
-      lotId: lot.id,
-      lotCode: lot.code,
+    await apiRequest<any>(`/quality/lot/${lotId}`, {
+      method: 'POST',
+      body: JSON.stringify({
+        ...qaData,
+        inspectorName,
+      }),
     });
-
-    return lot;
+    const updated = await apiService.getLotById(lotId);
+    if (!updated) throw new Error('Lote no encontrado tras guardar inspección QA');
+    return updated;
   },
 
   addColdChainLog: async (
@@ -176,254 +234,46 @@ export const apiService = {
     responsible: string,
     observations?: string
   ): Promise<Lot> => {
-    const lots = await apiService.getLots();
-    const index = lots.findIndex((l) => l.id === lotId);
-    if (index === -1) throw new Error('Lote no encontrado');
-
-    const lot = lots[index];
-    const now = new Date();
-    
-    let status: 'NORMAL' | 'WARNING' | 'CRITICAL' = 'NORMAL';
-    if (temp > -15) {
-      status = 'CRITICAL';
-    } else if (temp > -18) {
-      status = 'WARNING';
-    }
-
-    const newLog: ColdChainRecord = {
-      id: `cc-${Date.now()}`,
-      recordedAt: now.toISOString(),
-      time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      temperature: temp,
-      location,
-      responsible,
-      status,
-      observations,
-    };
-
-    lot.coldChainLogs.push(newLog);
-    
-    if (status === 'CRITICAL') {
-      lot.status = 'OBSERVED';
-    }
-    
-    lot.updatedAt = now.toISOString();
-
-    const ccStageIndex = lot.timeline.findIndex((t) => t.stage === 'COLD_CHAIN');
-    if (ccStageIndex !== -1) {
-      lot.timeline[ccStageIndex].status = status === 'CRITICAL' ? 'OBSERVED' : 'COMPLETED';
-      lot.timeline[ccStageIndex].updatedAt = now.toISOString();
-    }
-
-    lots[index] = lot;
-    localStorage.setItem(LOTS_STORAGE_KEY, JSON.stringify(lots));
-
-    await apiService.addAuditLog({
-      userId: 'usr-qa',
-      userName: responsible,
-      userRole: 'QA',
-      action: 'REGISTRO_CADENA_FRIO',
-      details: `Lectura de temperatura ${temp}°C (${status}) en ${location} para lote ${lot.code}`,
-      lotId: lot.id,
-      lotCode: lot.code,
+    await apiRequest<any>(`/cold-chain/lot/${lotId}`, {
+      method: 'POST',
+      body: JSON.stringify({
+        temperature: Number(temp),
+        location,
+        responsible,
+        observations,
+      }),
     });
+    const updated = await apiService.getLotById(lotId);
+    if (!updated) throw new Error('Lote no encontrado tras registrar temperatura');
+    return updated;
+  },
 
+  runSmartValidation: async (lotId: string, _validatorName: string): Promise<Lot> => {
+    const lot = await apiService.getLotById(lotId);
+    if (!lot) throw new Error('Lote no encontrado');
     return lot;
   },
 
-  runSmartValidation: async (lotId: string, validatorName: string): Promise<Lot> => {
-    const lots = await apiService.getLots();
-    const index = lots.findIndex((l) => l.id === lotId);
-    if (index === -1) throw new Error('Lote no encontrado');
-
-    const lot = lots[index];
-    const now = new Date().toISOString();
-
-    // Check rules
-    const hasProdInfo = Boolean(lot.production && lot.production.productName && lot.production.quantity > 0);
-    const hasQAConforme = Boolean(lot.qa && lot.qa.organolepticResult === 'CONFORME');
-    const hasColdChain = lot.coldChainLogs.length > 0 && !lot.coldChainLogs.some((c) => c.status === 'CRITICAL');
-    const hasDocs = lot.documents.length >= 2;
-
-    const items = [
-      {
-        key: 'prod',
-        label: 'Información de producción completa',
-        status: hasProdInfo ? ('PASS' as const) : ('FAIL' as const),
-        details: hasProdInfo ? undefined : 'Falta completar ficha técnica de producción',
-      },
-      {
-        key: 'qa',
-        label: 'Control de calidad QA registrado y conforme',
-        status: hasQAConforme ? ('PASS' as const) : ('FAIL' as const),
-        details: hasQAConforme ? undefined : lot.qa ? `QA actual: ${lot.qa.organolepticResult}` : 'Sin inspección QA realizada',
-      },
-      {
-        key: 'cold',
-        label: 'Cadena de frío con lecturas normales (< -18°C)',
-        status: hasColdChain ? ('PASS' as const) : ('FAIL' as const),
-        details: hasColdChain ? undefined : lot.coldChainLogs.length === 0 ? 'Sin lecturas de temperatura' : 'Lectura de temperatura crítica detectada',
-      },
-      {
-        key: 'docs',
-        label: 'Documentación obligatoria adjunta (Declaración Jurada, Pesaje, Análisis)',
-        status: hasDocs ? ('PASS' as const) : ('FAIL' as const),
-        details: hasDocs ? undefined : 'Faltan documentos requeridos',
-      },
-    ];
-
-    const observations: string[] = [];
-    items.forEach((item) => {
-      if (item.status === 'FAIL' && item.details) {
-        observations.push(item.details);
-      }
+  initiateSanitaryCertification: async (lotId: string, _userName: string): Promise<SanitaryCertificate> => {
+    const rawCert = await apiRequest<any>(`/certifications/lot/${lotId}/request`, {
+      method: 'POST',
     });
-
-    const isAllPass = items.every((i) => i.status === 'PASS');
-    const nextStatus = isAllPass ? 'READY_FOR_CERTIFICATION' : 'OBSERVED';
-
-    lot.validation = {
-      isValidated: isAllPass,
-      validatedAt: now,
-      validatedBy: validatorName,
-      items,
-      observations,
-    };
-
-    lot.status = nextStatus;
-    lot.updatedAt = now;
-
-    const valStageIndex = lot.timeline.findIndex((t) => t.stage === 'VALIDACION');
-    if (valStageIndex !== -1) {
-      lot.timeline[valStageIndex].status = isAllPass ? 'COMPLETED' : 'OBSERVED';
-      lot.timeline[valStageIndex].updatedAt = now;
-    }
-
-    lots[index] = lot;
-    localStorage.setItem(LOTS_STORAGE_KEY, JSON.stringify(lots));
-
-    await apiService.addAuditLog({
-      userId: 'usr-sys',
-      userName: validatorName,
-      userRole: 'LOGISTICA',
-      action: 'VALIDACION_INTELIGENTE',
-      details: `Validación automática para lote ${lot.code}: ${isAllPass ? 'CONFORME (Listo para Certificación)' : 'OBSERVADO (' + observations.length + ' observaciones)'}`,
-      lotId: lot.id,
-      lotCode: lot.code,
-    });
-
-    return lot;
+    return mapBackendCertToFrontend(rawCert, lotId);
   },
 
-  initiateSanitaryCertification: async (lotId: string, userName: string): Promise<SanitaryCertificate> => {
-    const lots = await apiService.getLots();
-    const index = lots.findIndex((l) => l.id === lotId);
-    if (index === -1) throw new Error('Lote no encontrado');
-
-    const lot = lots[index];
-    if (lot.qa?.organolepticResult !== 'CONFORME') {
-      throw new Error('BLOQUEO P0: No se puede iniciar trámite SANIPES si el lote no cuenta con dictamen QA CONFORME.');
-    }
-
-    const now = new Date().toISOString();
-
-    const certId = `cert-${Date.now()}`;
-    const certNumber = `EXP-SANIPES-2026-${Math.floor(10000 + Math.random() * 90000)}`;
-
-    const newCert: SanitaryCertificate = {
-      id: certId,
-      lotId: lot.id,
-      lotCode: lot.code,
-      sanipesDossierNumber: certNumber,
-      submissionDate: new Date().toISOString().split('T')[0],
-      status: 'IN_EVALUATION',
-      sanitaryInspector: 'Ing. Evaluador SANIPES',
-      evaluationOffice: 'Oficina Desconcentrada SANIPES - Paita',
-      requirements: [
-        { id: 'r1', code: 'REQ-01', name: 'Validación de Trazabilidad ExporTrace', status: 'COMPLIANT', verifiedBy: userName },
-        { id: 'r2', code: 'REQ-02', name: 'Inspección Organoléptica de Lote', status: 'COMPLIANT', verifiedBy: 'QA ExporTrace' },
-        { id: 'r3', code: 'REQ-03', name: 'Auditoría Físico-Química y Microbiológica', status: 'PENDING' },
-        { id: 'r4', code: 'REQ-04', name: 'Verificación HACCAP de Almacenamiento Frío', status: 'PENDING' },
-      ],
-      observations: ['Expediente digital enviado a mesa de partes virtual SANIPES.'],
-    };
-
-    const certsStr = localStorage.getItem(CERTS_STORAGE_KEY);
-    const certsMap = certsStr ? JSON.parse(certsStr) : {};
-    certsMap[certId] = newCert;
-    localStorage.setItem(CERTS_STORAGE_KEY, JSON.stringify(certsMap));
-
-    lot.certificationId = certId;
-    lot.status = 'IN_CERTIFICATION';
-    lot.updatedAt = now;
-
-    const certStageIndex = lot.timeline.findIndex((t) => t.stage === 'CERTIFICACION');
-    if (certStageIndex !== -1) {
-      lot.timeline[certStageIndex].status = 'IN_PROGRESS';
-      lot.timeline[certStageIndex].updatedAt = now;
-    }
-
-    lots[index] = lot;
-    localStorage.setItem(LOTS_STORAGE_KEY, JSON.stringify(lots));
-
-    await apiService.addAuditLog({
-      userId: 'usr-logistics',
-      userName,
-      userRole: 'LOGISTICA',
-      action: 'INICIO_CERTIFICACION',
-      details: `Solicitud de certificación SANIPES iniciada para lote ${lot.code}. Expediente N° ${certNumber}`,
-      lotId: lot.id,
-      lotCode: lot.code,
+  approveSanitaryCertificate: async (certId: string, _userName: string): Promise<SanitaryCertificate> => {
+    const rawCert = await apiRequest<any>(`/certifications/lot/${certId}/approve`, {
+      method: 'POST',
+      body: JSON.stringify({}),
     });
-
-    return newCert;
-  },
-
-  approveSanitaryCertificate: async (certId: string, userName: string): Promise<SanitaryCertificate> => {
-    const certsStr = localStorage.getItem(CERTS_STORAGE_KEY);
-    const certsMap: Record<string, SanitaryCertificate> = certsStr ? JSON.parse(certsStr) : {};
-    
-    if (!certsMap[certId]) throw new Error('Certificado no encontrado');
-
-    const cert = certsMap[certId];
-    cert.status = 'APPROVED';
-    cert.issuedDate = new Date().toISOString().split('T')[0];
-    cert.certificateNumber = `CS-2026-${Math.floor(100000 + Math.random() * 900000)}-EXP`;
-    cert.requirements = cert.requirements.map((r) => ({ ...r, status: 'COMPLIANT' }));
-    cert.observations = ['Certificado Sanitario Oficial Emitido por SANIPES. Lote Apto para Exportación.'];
-
-    certsMap[certId] = cert;
-    localStorage.setItem(CERTS_STORAGE_KEY, JSON.stringify(certsMap));
-
-    // Update lot status to CERTIFIED / READY_FOR_DISPATCH
-    const lots = await apiService.getLots();
-    const lotIndex = lots.findIndex((l) => l.id === cert.lotId);
-    if (lotIndex !== -1) {
-      const lot = lots[lotIndex];
-      lot.status = 'CERTIFIED';
-      lot.updatedAt = new Date().toISOString();
-      
-      const certStageIndex = lot.timeline.findIndex((t) => t.stage === 'CERTIFICACION');
-      if (certStageIndex !== -1) {
-        lot.timeline[certStageIndex].status = 'COMPLETED';
-        lot.timeline[certStageIndex].updatedAt = new Date().toISOString();
-      }
-
-      lots[lotIndex] = lot;
-      localStorage.setItem(LOTS_STORAGE_KEY, JSON.stringify(lots));
+    try {
+      await apiRequest<any>(`/certifications/lot/${certId}/enable-dispatch`, {
+        method: 'POST',
+      });
+    } catch {
+      // Lot remains CERTIFIED if enable-dispatch is invoked separately
     }
-
-    await apiService.addAuditLog({
-      userId: 'usr-logistics',
-      userName,
-      userRole: 'LOGISTICA',
-      action: 'APROBACION_SANIPES',
-      details: `Certificado Sanitario Aprobado N° ${cert.certificateNumber} para lote ${cert.lotCode}`,
-      lotId: cert.lotId,
-      lotCode: cert.lotCode,
-    });
-
-    return cert;
+    return mapBackendCertToFrontend(rawCert, certId);
   },
 
   authorizeDispatch: async (
@@ -436,71 +286,49 @@ export const apiService = {
       shippingLine: string;
       estimatedDeparture: string;
     },
-    authorName: string
+    _authorName: string
   ): Promise<Lot> => {
-    const lots = await apiService.getLots();
-    const index = lots.findIndex((l) => l.id === lotId);
-    if (index === -1) throw new Error('Lote no encontrado');
-
-    const lot = lots[index];
-    if (lot.status !== 'CERTIFIED' && lot.status !== 'READY_FOR_DISPATCH') {
-      throw new Error('BLOQUEO P0: El lote debe contar con Certificado Sanitario Oficial aprobado antes de ser despachado.');
-    }
-
-    const now = new Date().toISOString();
-
-    lot.dispatchInfo = {
-      authorizedAt: now,
-      authorizedBy: authorName,
-      ...dispatchData,
+    const payload = {
+      puertoDestino: `${dispatchData.destinationPort}, ${dispatchData.destinationCountry}`,
+      numeroContenedor: dispatchData.containerNumber,
+      precintoSeguridad: dispatchData.sealNumber,
+      transportista: dispatchData.shippingLine,
+      observaciones: `Despacho autorizado con salida estimada: ${dispatchData.estimatedDeparture}`,
     };
-    lot.status = 'DISPATCHED';
-    lot.updatedAt = now;
 
-    const dispatchStageIndex = lot.timeline.findIndex((t) => t.stage === 'DESPACHO');
-    if (dispatchStageIndex !== -1) {
-      lot.timeline[dispatchStageIndex].status = 'COMPLETED';
-      lot.timeline[dispatchStageIndex].updatedAt = now;
-    }
-
-    lots[index] = lot;
-    localStorage.setItem(LOTS_STORAGE_KEY, JSON.stringify(lots));
-
-    await apiService.addAuditLog({
-      userId: 'usr-logistics',
-      userName: authorName,
-      userRole: 'LOGISTICA',
-      action: 'AUTORIZACION_DESPACHO',
-      details: `Despacho autorizado para ${lot.code}. Contenedor: ${dispatchData.containerNumber}, Destino: ${dispatchData.destinationPort} (${dispatchData.destinationCountry})`,
-      lotId: lot.id,
-      lotCode: lot.code,
+    await apiRequest<any>(`/dispatches/lot/${lotId}`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
     });
 
-    return lot;
+    const updated = await apiService.getLotById(lotId);
+    if (!updated) throw new Error('Lote no encontrado tras autorizar despacho');
+    return updated;
   },
 
   // --- CERTIFICATES ---
   getCertificateById: async (certId: string): Promise<SanitaryCertificate | null> => {
-    const certsStr = localStorage.getItem(CERTS_STORAGE_KEY);
-    const certsMap = certsStr ? JSON.parse(certsStr) : {};
-    return certsMap[certId] || null;
+    if (!certId) return null;
+    const numericId = certId.replace(/^cert-/, '');
+    try {
+      const rawCert = await apiRequest<any>(`/certifications/lot/${numericId}`);
+      if (!rawCert) return null;
+      return mapBackendCertToFrontend(rawCert, numericId);
+    } catch {
+      return null;
+    }
   },
 
   // --- AUDIT LOGS ---
   getAuditLogs: async (): Promise<AuditLog[]> => {
-    const logsStr = localStorage.getItem(AUDIT_STORAGE_KEY);
-    return logsStr ? JSON.parse(logsStr) : [];
+    return [];
   },
 
   addAuditLog: async (log: Omit<AuditLog, 'id' | 'timestamp'>): Promise<AuditLog> => {
-    const logs = await apiService.getAuditLogs();
-    const newLog: AuditLog = {
+    return {
       id: `log-${Date.now()}`,
       timestamp: new Date().toISOString(),
       ...log,
     };
-    logs.unshift(newLog);
-    localStorage.setItem(AUDIT_STORAGE_KEY, JSON.stringify(logs.slice(0, 100))); // keep 100 recent
-    return newLog;
   },
 };

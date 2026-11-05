@@ -35,8 +35,12 @@ interface DashboardPageProps {
 }
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
-  const { lots } = useLots();
+  const { lots, refreshData } = useLots();
   const { currentRole } = useAuth();
+
+  React.useEffect(() => {
+    refreshData();
+  }, [refreshData]);
 
   const totalLots = lots.length;
   const conformes = lots.filter(

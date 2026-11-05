@@ -43,10 +43,13 @@ import { SuperAdminSettingsPage } from './pages/SuperAdmin/SuperAdminSettingsPag
 // Notifications Center
 import { NotificationsPage } from './pages/Notifications/NotificationsPage';
 
-// Support Center & Incidents (Fase B)
+// Support Center, Service Catalog & Incidents
 import { SupportCenterPage } from './pages/Support/SupportCenterPage';
+import { ServiceCatalogPage } from './pages/Support/ServiceCatalogPage';
 import { MyIncidentsPage } from './pages/Support/MyIncidentsPage';
 import { IncidentDetailPage } from './pages/Support/IncidentDetailPage';
+import { MyServiceRequestsPage } from './pages/Support/MyServiceRequestsPage';
+import { ServiceRequestDetailPage } from './pages/Support/ServiceRequestDetailPage';
 
 const MainAppRouter: React.FC = () => {
   const { currentRole, currentUser } = useAuth();
@@ -256,9 +259,12 @@ const MainAppRouter: React.FC = () => {
       return <NotificationsPage onNavigate={navigate} />;
     }
 
-    // Support Center & Incidents (Fase B)
+    // Support Center, Service Catalog & Incidents
     if (currentPath === '/support') {
       return <SupportCenterPage onNavigate={navigate} />;
+    }
+    if (currentPath === '/support/catalog') {
+      return <ServiceCatalogPage onNavigate={navigate} />;
     }
     if (currentPath === '/support/incidents') {
       return <MyIncidentsPage onNavigate={navigate} />;
@@ -266,6 +272,13 @@ const MainAppRouter: React.FC = () => {
     if (currentPath.startsWith('/support/incidents/')) {
       const id = currentPath.replace('/support/incidents/', '');
       return <IncidentDetailPage incidentId={id} onNavigate={navigate} />;
+    }
+    if (currentPath === '/support/requests') {
+      return <MyServiceRequestsPage onNavigate={navigate} />;
+    }
+    if (currentPath.startsWith('/support/requests/')) {
+      const id = currentPath.replace('/support/requests/', '');
+      return <ServiceRequestDetailPage requestId={id} onNavigate={navigate} />;
     }
 
     // Default Fallback

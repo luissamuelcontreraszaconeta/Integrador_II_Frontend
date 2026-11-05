@@ -13,9 +13,19 @@ interface QualityDashboardPageProps {
 }
 
 export const QualityDashboardPage: React.FC<QualityDashboardPageProps> = ({ onNavigate }) => {
-  const { lots } = useLots();
+  const { lots, refreshData } = useLots();
 
-  const qaPending = lots.filter((l) => l.status === 'PENDING_QA' || l.status === 'IN_QA');
+  React.useEffect(() => {
+    refreshData();
+  }, [refreshData]);
+
+  const qaPending = lots.filter(
+    (l) =>
+      l.status === 'REGISTERED' ||
+      l.status === 'UNDER_QA_INSPECTION' ||
+      l.status === 'PENDING_QA' ||
+      l.status === 'IN_QA'
+  );
   const qaConformes = lots.filter((l) => l.qa && l.qa.organolepticResult === 'CONFORME');
   const qaObservados = lots.filter((l) => l.status === 'OBSERVED');
   const coldChainAlerts = lots.filter((l) => l.coldChainLogs.some((c) => c.status === 'CRITICAL'));

@@ -19,6 +19,8 @@ import {
   History,
   LifeBuoy,
   ClipboardList,
+  LayoutGrid,
+  FileClock,
   X
 } from 'lucide-react';
 
@@ -191,10 +193,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
       section: 'SOPORTE',
     },
     {
+      id: 'support-catalog',
+      path: '/support/catalog',
+      label: 'Catálogo de Servicios',
+      icon: <LayoutGrid className="w-4 h-4 shrink-0" />,
+      roles: ['ADMINISTRADOR', 'PRODUCCION', 'QA', 'LOGISTICA', 'GERENCIA'],
+      section: 'SOPORTE',
+    },
+    {
       id: 'support-my-incidents',
       path: '/support/incidents',
       label: 'Mis Incidencias',
       icon: <ClipboardList className="w-4 h-4 shrink-0" />,
+      roles: ['ADMINISTRADOR', 'PRODUCCION', 'QA', 'LOGISTICA', 'GERENCIA'],
+      section: 'SOPORTE',
+    },
+    {
+      id: 'support-my-requests',
+      path: '/support/requests',
+      label: 'Mis Solicitudes',
+      icon: <FileClock className="w-4 h-4 shrink-0" />,
       roles: ['ADMINISTRADOR', 'PRODUCCION', 'QA', 'LOGISTICA', 'GERENCIA'],
       section: 'SOPORTE',
     },

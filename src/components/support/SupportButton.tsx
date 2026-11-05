@@ -1,5 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { LifeBuoy, AlertCircle, ClipboardList, HelpCircle } from 'lucide-react';
+import {
+  LifeBuoy,
+  AlertCircle,
+  ClipboardList,
+  HelpCircle,
+  LayoutGrid,
+  FileClock,
+} from 'lucide-react';
 import { ReportIncidentModal } from './ReportIncidentModal';
 
 interface SupportButtonProps {
@@ -61,7 +68,7 @@ export const SupportButton: React.FC<SupportButtonProps> = ({ onNavigate }) => {
           <div
             role="menu"
             aria-label="Opciones del Centro de Soporte"
-            className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-200/90 overflow-hidden z-50 animate-scale-in text-left"
+            className="absolute right-0 mt-2 w-68 bg-white rounded-2xl shadow-xl border border-slate-200/90 overflow-hidden z-50 animate-scale-in text-left"
           >
             <div className="px-4 py-3 bg-slate-50 border-b border-slate-100">
               <p className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
@@ -69,7 +76,7 @@ export const SupportButton: React.FC<SupportButtonProps> = ({ onNavigate }) => {
                 Centro de Soporte
               </p>
               <p className="text-[11px] text-slate-500 mt-0.5">
-                Asistencia y gestión de incidencias
+                Incidencias y catálogo de servicios
               </p>
             </div>
 
@@ -81,7 +88,7 @@ export const SupportButton: React.FC<SupportButtonProps> = ({ onNavigate }) => {
                   setIsMenuOpen(false);
                   setIsReportModalOpen(true);
                 }}
-                className="w-full flex items-start gap-3 px-3 py-2.5 rounded-xl hover:bg-sky-50/80 text-left transition-colors cursor-pointer group"
+                className="w-full flex items-start gap-3 px-3 py-2 rounded-xl hover:bg-sky-50/80 text-left transition-colors cursor-pointer group"
               >
                 <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 group-hover:bg-rose-100">
                   <AlertCircle className="w-4 h-4" />
@@ -99,8 +106,27 @@ export const SupportButton: React.FC<SupportButtonProps> = ({ onNavigate }) => {
               <button
                 type="button"
                 role="menuitem"
+                onClick={() => navigateTo('/support/catalog')}
+                className="w-full flex items-start gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 text-left transition-colors cursor-pointer group"
+              >
+                <div className="w-8 h-8 rounded-lg bg-sky-50 text-[#0F6CBD] flex items-center justify-center shrink-0 group-hover:bg-sky-100">
+                  <LayoutGrid className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-slate-900 block">
+                    Catálogo de servicios
+                  </span>
+                  <span className="text-[11px] text-slate-500 block">
+                    Consultas de lotes y accesos
+                  </span>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                role="menuitem"
                 onClick={() => navigateTo('/support/incidents')}
-                className="w-full flex items-start gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 text-left transition-colors cursor-pointer group"
+                className="w-full flex items-start gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 text-left transition-colors cursor-pointer group"
               >
                 <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#0F6CBD] flex items-center justify-center shrink-0 group-hover:bg-blue-100">
                   <ClipboardList className="w-4 h-4" />
@@ -111,6 +137,25 @@ export const SupportButton: React.FC<SupportButtonProps> = ({ onNavigate }) => {
                   </span>
                   <span className="text-[11px] text-slate-500 block">
                     Consultar estado y prioridad
+                  </span>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => navigateTo('/support/requests')}
+                className="w-full flex items-start gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 text-left transition-colors cursor-pointer group"
+              >
+                <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center shrink-0 group-hover:bg-indigo-100">
+                  <FileClock className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-slate-900 block">
+                    Mis solicitudes
+                  </span>
+                  <span className="text-[11px] text-slate-500 block">
+                    Seguimiento y SLA objetivo
                   </span>
                 </div>
               </button>
