@@ -44,6 +44,7 @@ export const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({
   const { lots } = useLots();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [createdRecord, setCreatedRecord] = useState<ServiceRequestRecord | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -73,6 +74,7 @@ export const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setIsSubmitting(false);
+      setSubmitError(null);
       setCreatedRecord(null);
       setErrors({});
       setSummary('');
@@ -131,10 +133,7 @@ export const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({
 
     if (service.code === 'SR-INF-01') {
       if (!requiredInfo.trim()) {
-        nextErrors.requiredInfo = 'Selecciona o especifica la información requerida.';
-      }
-      if (!additionalDetail.trim()) {
-        nextErrors.additionalDetail = 'Ingresa el detalle adicional de tu consulta.';
+        nextErrors.requiredInfo = 'Indica la información requerida del lote.';
       }
     }
 
@@ -293,6 +292,7 @@ export const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
+    setSubmitError(null);
     if (!validate()) return;
 
     setIsSubmitting(true);
@@ -300,6 +300,9 @@ export const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({
       const created = await serviceRequestService.createRequest({
         serviceCode: service.code,
         summary: summary.trim(),
+        lotCode: lotCode.trim(),
+        requestedInformation: requiredInfo.trim(),
+        additionalDetail: additionalDetail.trim() || undefined,
         relatedLotCode: lotCode.trim() || undefined,
         attachmentName: attachmentName || undefined,
         submittedFields: buildSubmittedFields(),
@@ -312,6 +315,10 @@ export const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({
       if (onSuccess) {
         onSuccess(created);
       }
+    } catch {
+      setSubmitError(
+        'No se pudo registrar la solicitud en este momento. Verifica los datos e intenta nuevamente.'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -452,10 +459,12 @@ export const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({
             </div>
             <div>
               <h4 className="text-sm sm:text-base font-bold text-emerald-950">
-                Solicitud registrada exitosamente
+                Solicitud registrada correctamente
               </h4>
               <p className="text-xs text-emerald-800 mt-0.5 leading-relaxed">
-                Puedes consultar el seguimiento, etapas de revisión y SLA objetivo desde la sección Mis solicitudes.
+                {createdRecord.syncStatus === 'SYNCED'
+                  ? 'Tu solicitud ha sido registrada y sincronizada con el Centro de Soporte.'
+                  : 'Solicitud registrada correctamente. Sincronización con soporte pendiente.'}
               </p>
             </div>
           </div>
@@ -464,7 +473,7 @@ export const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({
             <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-200">
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
-                  Código de solicitud
+                  Código
                 </span>
                 <span className="text-lg font-black font-mono text-[#0F4C81]">
                   {createdRecord.code}
@@ -479,7 +488,7 @@ export const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div className="bg-white p-3 rounded-lg border border-slate-200/80">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                  Servicio solicitado
+                  Servicio
                 </span>
                 <span className="font-semibold text-slate-800 mt-0.5 block">
                   {createdRecord.serviceTitle}
@@ -493,6 +502,30 @@ export const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({
                 <span className="font-semibold text-[#0F4C81] mt-0.5 block">
                   {createdRecord.slaTargetLabel}
                 </span>
+              </div>
+
+              <div className="bg-white p-3 rounded-lg border border-slate-200/80">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                  Sincronización
+                </span>
+                <span className="font-semibold text-slate-800 mt-0.5 block">
+                  {createdRecord.syncStatus === 'SYNCED'
+                    ? 'Sincronizado'
+                    : 'Sincronización con soporte pendiente'}
+                </span>
+              </div>
+
+              <div className="bg-white p-3 rounded-lg border border-slate-200/80">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                  Ticket Jira
+                </span>
+                {createdRecord.syncStatus === 'SYNCED' && createdRecord.jiraIssueKey ? (
+                  <span className="inline-block mt-0.5 font-mono text-xs font-bold text-[#0F4C81] bg-sky-50 px-2 py-0.5 rounded border border-sky-200">
+                    {createdRecord.jiraIssueKey}
+                  </span>
+                ) : (
+                  <span className="font-mono text-slate-500 mt-0.5 block">—</span>
+                )}
               </div>
             </div>
           </div>
@@ -517,6 +550,11 @@ export const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({
         </div>
       ) : (
         <form onSubmit={handleSubmit} noValidate className="space-y-4 text-left">
+          {submitError && (
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs font-medium text-rose-800">
+              {submitError}
+            </div>
+          )}
           {/* Cinta superior informativa de SLA y Aprobación */}
           <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-slate-50 border border-slate-200/90">
             <div className="flex flex-wrap items-center gap-2">
@@ -559,33 +597,21 @@ export const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({
                 >
                   Información requerida <span className="text-rose-500">*</span>
                 </label>
-                <select
+                <textarea
                   id="sr-required-info"
+                  rows={2}
                   value={requiredInfo}
+                  placeholder="Indique qué información necesita consultar sobre el lote..."
                   onChange={(e) => {
                     setRequiredInfo(e.target.value);
                     clearError('requiredInfo');
                   }}
-                  className={`w-full bg-white border rounded-lg px-3.5 py-2.5 text-sm text-slate-900 focus:outline-hidden focus:ring-2 cursor-pointer ${
+                  className={`w-full bg-white border rounded-lg px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-hidden focus:ring-2 ${
                     errors.requiredInfo
                       ? 'border-rose-400 focus:ring-rose-400/30'
                       : 'border-slate-300 focus:ring-[#0F6CBD]/20 focus:border-[#0F6CBD]'
                   }`}
-                >
-                  <option value="">Selecciona el alcance del seguimiento...</option>
-                  <option value="Seguimiento integral (Producción, QA, Cadena de Frío y Despacho)">
-                    Seguimiento integral (Producción, QA, Cadena de Frío y Despacho)
-                  </option>
-                  <option value="Estado actual e historial de etapas de trazabilidad">
-                    Estado actual e historial de etapas de trazabilidad
-                  </option>
-                  <option value="Registros de control de calidad y cadena de frío">
-                    Registros de control de calidad y cadena de frío
-                  </option>
-                  <option value="Estado de certificación sanitaria y autorización de despacho">
-                    Estado de certificación sanitaria y autorización de despacho
-                  </option>
-                </select>
+                />
                 {errors.requiredInfo && (
                   <p className="text-xs text-rose-600 font-medium mt-1">
                     {errors.requiredInfo}
@@ -598,28 +624,19 @@ export const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({
                   htmlFor="sr-additional-detail"
                   className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
                 >
-                  Detalle adicional <span className="text-rose-500">*</span>
+                  Detalle adicional <span className="text-slate-400 font-normal">(Opcional)</span>
                 </label>
                 <textarea
                   id="sr-additional-detail"
-                  rows={3}
+                  rows={2}
                   value={additionalDetail}
-                  placeholder="Precisa cualquier observación o contexto necesario para la consulta..."
+                  placeholder="Agregue información complementaria..."
                   onChange={(e) => {
                     setAdditionalDetail(e.target.value);
                     clearError('additionalDetail');
                   }}
-                  className={`w-full bg-white border rounded-lg px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-hidden focus:ring-2 ${
-                    errors.additionalDetail
-                      ? 'border-rose-400 focus:ring-rose-400/30'
-                      : 'border-slate-300 focus:ring-[#0F6CBD]/20 focus:border-[#0F6CBD]'
-                  }`}
+                  className="w-full bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#0F6CBD]/20 focus:border-[#0F6CBD]"
                 />
-                {errors.additionalDetail && (
-                  <p className="text-xs text-rose-600 font-medium mt-1">
-                    {errors.additionalDetail}
-                  </p>
-                )}
               </div>
             </>
           )}
