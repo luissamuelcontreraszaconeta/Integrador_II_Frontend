@@ -19,6 +19,10 @@ export const LotsListPage: React.FC<LotsListPageProps> = ({ onNavigate }) => {
   const { lots, refreshData, loading } = useLots();
   const { currentRole } = useAuth();
 
+  React.useEffect(() => {
+    refreshData();
+  }, [refreshData]);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [selectedQrLot, setSelectedQrLot] = useState<Lot | null>(null);

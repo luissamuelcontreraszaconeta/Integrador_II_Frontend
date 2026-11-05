@@ -31,8 +31,12 @@ interface LotDetailPageProps {
 }
 
 export const LotDetailPage: React.FC<LotDetailPageProps> = ({ lotId, onNavigate }) => {
-  const { getLotById, runValidation, addColdChainLog, getCertificate, initiateCertification } = useLots();
+  const { getLotById, runValidation, addColdChainLog, getCertificate, initiateCertification, refreshData } = useLots();
   const { currentRole } = useAuth();
+
+  React.useEffect(() => {
+    refreshData();
+  }, [lotId, refreshData]);
   
   const lot = getLotById(lotId);
   const [activeTab, setActiveTab] = useState<

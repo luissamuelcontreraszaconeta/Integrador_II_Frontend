@@ -13,11 +13,24 @@ interface DispatchPageProps {
 }
 
 export const DispatchPage: React.FC<DispatchPageProps> = ({ lotId, onNavigate }) => {
-  const { lots, authorizeDispatch } = useLots();
+  const { lots, authorizeDispatch, refreshData } = useLots();
   
   const [selectedLotId, setSelectedLotId] = useState<string>(
     lotId || lots.find((l) => l.status === 'READY_FOR_DISPATCH' || l.status === 'CERTIFIED')?.id || lots[0]?.id || ''
   );
+
+  React.useEffect(() => {
+    refreshData();
+  }, [refreshData]);
+
+  React.useEffect(() => {
+    if (lotId) {
+      setSelectedLotId(lotId);
+    } else if ((!selectedLotId || !lots.some((l) => l.id === selectedLotId)) && lots.length > 0) {
+      const candidate = lots.find((l) => l.status === 'READY_FOR_DISPATCH' || l.status === 'CERTIFIED') || lots[0];
+      setSelectedLotId(candidate.id);
+    }
+  }, [lotId, lots, selectedLotId]);
   
   const lot = lots.find((l) => l.id === selectedLotId) || lots[0];
 

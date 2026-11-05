@@ -12,7 +12,11 @@ interface LogisTracDashboardPageProps {
 }
 
 export const LogisTracDashboardPage: React.FC<LogisTracDashboardPageProps> = ({ onNavigate }) => {
-  const { lots } = useLots();
+  const { lots, refreshData } = useLots();
+
+  React.useEffect(() => {
+    refreshData();
+  }, [refreshData]);
 
   const columns: Column<Lot>[] = [
     {

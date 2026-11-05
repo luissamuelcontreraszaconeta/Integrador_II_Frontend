@@ -36,6 +36,12 @@ export const ColdChainPage: React.FC<ColdChainPageProps> = ({ onNavigate }) => {
   const selectedLot = lots.find((l) => l.id === selectedLotId) || lots[0];
 
   useEffect(() => {
+    if ((!selectedLotId || !lots.some((l) => l.id === selectedLotId)) && lots.length > 0) {
+      setSelectedLotId(lots[0].id);
+    }
+  }, [lots, selectedLotId]);
+
+  useEffect(() => {
     if (selectedLot?.id) {
       loadThermalData(selectedLot.id);
     }
@@ -59,12 +65,6 @@ export const ColdChainPage: React.FC<ColdChainPageProps> = ({ onNavigate }) => {
     if (!selectedLotId) return;
     setIsSubmitting(true);
     try {
-      await coldChainApiService.addTemperatureLog(selectedLotId, {
-        temperature: Number(temp),
-        location,
-        responsible,
-        observations: obs,
-      });
       await addColdChainLog(selectedLotId, Number(temp), location, obs);
       setObs('Auditoría térmica de rutina');
       await loadThermalData(selectedLotId);

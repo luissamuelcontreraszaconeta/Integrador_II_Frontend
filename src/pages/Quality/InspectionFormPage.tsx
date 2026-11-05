@@ -37,7 +37,7 @@ interface EnrichedQaEvidence extends QaEvidenceItem {
 }
 
 export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, onNavigate }) => {
-  const { getLotById, updateQAInspection } = useLots();
+  const { getLotById, refreshData } = useLots();
   const lot = getLotById(lotId);
 
   const [appearance, setAppearance] = useState<'EXCELENTE' | 'BUENO' | 'REGULAR' | 'DEFECTUOSO'>('EXCELENTE');
@@ -170,9 +170,9 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
     setErrorMsg(null);
 
     try {
-      const numLotId = Number(lot.id) || 1;
+      const numLotId = Number(lot.id);
 
-      // 1. Save QA inspection through service
+      // 1. Save QA inspection through backend REST API
       const savedInspection = await qualityService.saveInspection(numLotId, {
         inspectorName: 'Dra. María Elena Quispe',
         appearance,
@@ -185,19 +185,7 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
         evidenceUrls: existingEvidences.map((e) => e.fileUrl),
       });
 
-      // 2. Also update context state
-      await updateQAInspection(lot.id, {
-        appearance,
-        color,
-        texture,
-        smell,
-        parasiteCheck,
-        organolepticResult,
-        observations,
-        evidenceUrls: existingEvidences.map((e) => e.fileUrl),
-      });
-
-      // 3. Upload real evidence files if any were added
+      // 2. Upload real evidence files if any were added
       if (selectedFiles.length > 0 && savedInspection.id) {
         for (const item of selectedFiles) {
           try {
@@ -207,6 +195,9 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
           }
         }
       }
+
+      // 3. Refresh centralized lot context from backend DB
+      await refreshData();
 
       onNavigate(`/lots/${lot.id}`);
     } catch (err: any) {

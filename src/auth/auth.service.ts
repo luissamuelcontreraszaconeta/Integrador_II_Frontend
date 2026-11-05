@@ -198,6 +198,9 @@ export const authService = {
       localStorage.removeItem(SESSION_ID_KEY);
       localStorage.removeItem(POLICY_KEY);
       localStorage.removeItem(USER_KEY);
+      localStorage.removeItem('exportrace_lots_v1');
+      localStorage.removeItem('exportrace_certs_v1');
+      localStorage.removeItem('exportrace_audit_v1');
 
       if (reason) {
         sessionStorage.setItem('exportrace_logout_reason', reason);
