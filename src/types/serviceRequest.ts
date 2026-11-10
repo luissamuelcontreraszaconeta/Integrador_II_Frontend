@@ -11,9 +11,18 @@ export type ServiceCatalogCategoryKey = 'ALL' | 'INFORMATION' | 'ACCESS';
 export type ServiceRequestStatus =
   | 'REGISTERED'
   | 'IN_REVIEW'
+  | 'IN_PROGRESS'
   | 'PENDING_APPROVAL'
   | 'IN_IMPLEMENTATION'
-  | 'COMPLETED';
+  | 'RESOLVED'
+  | 'COMPLETED'
+  | 'REJECTED';
+
+export type ServiceRequestApprovalStatus =
+  | 'NOT_REQUIRED'
+  | 'PENDING_APPROVAL'
+  | 'APPROVED'
+  | 'REJECTED';
 
 export type ServiceRequestSyncStatus = 'SYNCED' | 'PENDING' | 'RETRYING' | 'ERROR';
 
@@ -47,6 +56,16 @@ export interface ServiceRequestSubmittedField {
   value: string;
 }
 
+export interface ServiceRequestCommentItem {
+  id: number;
+  jiraCommentId: string;
+  authorDisplayName: string;
+  body: string;
+  publicComment: boolean;
+  createdAt: string;
+  source: string;
+}
+
 export interface ServiceRequestRecord {
   id: string;
   code: string;
@@ -60,15 +79,22 @@ export interface ServiceRequestRecord {
   updatedAt: string;
   slaTargetLabel: string;
   requiresApproval: boolean;
+  approvalStatus?: ServiceRequestApprovalStatus;
   syncStatus: ServiceRequestSyncStatus;
   jiraIssueKey: string | null;
+  jiraStatus?: string | null;
+  jiraSlaSummary?: string | null;
+  jiraLastSyncAt?: string | null;
   requesterName: string;
   requesterEmail: string;
   requesterRole: string;
   requesterArea: string;
   relatedLotCode?: string;
   attachmentName?: string;
+  hasAttachment?: boolean;
+  jiraAttachmentSynced?: boolean;
   submittedFields: ServiceRequestSubmittedField[];
+  comments?: ServiceRequestCommentItem[];
 }
 
 export const SERVICE_CATALOG_CATEGORIES: {
@@ -152,9 +178,19 @@ export const SERVICE_CATALOG_ITEMS: ServiceCatalogItem[] = [
 export const SERVICE_REQUEST_STATUS_LABELS: Record<ServiceRequestStatus, string> = {
   REGISTERED: 'Solicitud registrada',
   IN_REVIEW: 'En revisión',
+  IN_PROGRESS: 'En progreso',
   PENDING_APPROVAL: 'Pendiente de aprobación',
   IN_IMPLEMENTATION: 'En implementación',
+  RESOLVED: 'Resuelta',
   COMPLETED: 'Completada',
+  REJECTED: 'Rechazada',
+};
+
+export const SERVICE_REQUEST_APPROVAL_LABELS: Record<ServiceRequestApprovalStatus, string> = {
+  NOT_REQUIRED: 'No requiere aprobación',
+  PENDING_APPROVAL: 'Pendiente de aprobación',
+  APPROVED: 'Aprobada',
+  REJECTED: 'Rechazada',
 };
 
 export const SERVICE_REQUEST_SYNC_LABELS: Record<ServiceRequestSyncStatus, string> = {
@@ -199,9 +235,12 @@ export function buildServiceRequestTimeline(
       description: 'Ejecución técnica u operativa del cambio o acceso aprobado.',
     },
     {
-      key: 'COMPLETED',
-      label: 'Completada',
-      description: 'Atención finalizada y confirmada en ExporTrace.',
+      key: record.status === 'REJECTED' ? 'REJECTED' : 'COMPLETED',
+      label: record.status === 'REJECTED' ? 'Rechazada' : 'Completada',
+      description:
+        record.status === 'REJECTED'
+          ? 'La solicitud fue desestimada o rechazada durante la evaluación.'
+          : 'Atención finalizada y confirmada en ExporTrace.',
     },
   ];
 
@@ -226,23 +265,33 @@ export function buildServiceRequestTimeline(
       description: `Preparación de respuesta o verificación del expediente (${record.slaTargetLabel}).`,
     },
     {
-      key: 'COMPLETED',
-      label: 'Completada',
-      description: 'Resultado entregado y solicitud cerrada.',
+      key: record.status === 'REJECTED' ? 'REJECTED' : 'COMPLETED',
+      label: record.status === 'REJECTED' ? 'Rechazada' : 'Completada',
+      description:
+        record.status === 'REJECTED'
+          ? 'Solicitud cerrada sin procedencia.'
+          : 'Resultado entregado y solicitud cerrada.',
     },
   ];
 
   const applicableSteps = record.requiresApproval ? stepsWithApproval : stepsWithoutApproval;
 
-  // Map current status index
-  let currentIdx = applicableSteps.findIndex((s) => s.key === record.status);
+  // Normalize intermediate status keys to timeline steps
+  let normalizedStatus: ServiceRequestStatus = record.status;
+  if (normalizedStatus === 'IN_PROGRESS') {
+    normalizedStatus = 'IN_IMPLEMENTATION';
+  } else if (normalizedStatus === 'RESOLVED') {
+    normalizedStatus = 'COMPLETED';
+  }
+
+  let currentIdx = applicableSteps.findIndex((s) => s.key === normalizedStatus);
   if (currentIdx === -1) {
     currentIdx = 0;
   }
 
   return applicableSteps.map((step, index) => {
     let state: 'completed' | 'current' | 'upcoming' = 'upcoming';
-    if (record.status === 'COMPLETED') {
+    if (normalizedStatus === 'COMPLETED') {
       state = 'completed';
     } else if (index < currentIdx) {
       state = 'completed';

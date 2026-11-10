@@ -11,10 +11,13 @@ import {
   FileText,
   Package,
   RefreshCw,
+  MessageSquare,
+  ShieldCheck,
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import {
   RequiresApprovalBadge,
+  ServiceRequestApprovalBadge,
   ServiceRequestStatusBadge,
   ServiceRequestSyncBadge,
   ServiceSlaBadge,
@@ -35,6 +38,9 @@ export const ServiceRequestDetailPage: React.FC<
 > = ({ requestId, onNavigate }) => {
   const [record, setRecord] = useState<ServiceRequestRecord | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [refreshCooldown, setRefreshCooldown] = useState<boolean>(false);
+  const [refreshFeedback, setRefreshFeedback] = useState<string | null>(null);
 
   const navigateTo = (path: string) => {
     if (onNavigate) {
@@ -59,7 +65,26 @@ export const ServiceRequestDetailPage: React.FC<
     loadDetail();
   }, [loadDetail]);
 
-  const formatDateTime = (iso?: string) => {
+  const handleRefreshFromJira = async () => {
+    if (!record || refreshing || refreshCooldown) return;
+    setRefreshing(true);
+    setRefreshFeedback(null);
+    try {
+      const updated = await serviceRequestService.refreshFromJira(record.id);
+      setRecord(updated);
+      setRefreshFeedback('Estado y respuestas actualizados desde soporte.');
+      setRefreshCooldown(true);
+      setTimeout(() => setRefreshCooldown(false), 5000);
+    } catch {
+      setRefreshFeedback(
+        'No fue posible consultar actualizaciones en este momento. Se muestran los últimos datos locales.'
+      );
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  const formatDateTime = (iso?: string | null) => {
     if (!iso) return '—';
     try {
       return new Date(iso).toLocaleString('es-PE', {
@@ -110,6 +135,7 @@ export const ServiceRequestDetailPage: React.FC<
   }
 
   const timelineSteps = buildServiceRequestTimeline(record);
+  const publicComments = record.comments || [];
 
   return (
     <div className="space-y-6 text-left">
@@ -135,7 +161,11 @@ export const ServiceRequestDetailPage: React.FC<
                   {record.serviceCode}
                 </span>
                 <ServiceRequestStatusBadge status={record.status} />
-                {record.requiresApproval && <RequiresApprovalBadge />}
+                {record.requiresApproval && (
+                  <ServiceRequestApprovalBadge
+                    approvalStatus={record.approvalStatus || 'PENDING_APPROVAL'}
+                  />
+                )}
               </div>
               <h1 className="text-lg sm:text-xl font-bold text-slate-900 mt-2">
                 {record.serviceTitle}
@@ -146,14 +176,40 @@ export const ServiceRequestDetailPage: React.FC<
             </div>
           </div>
 
-          {/* Estado de Sincronización y Jira Issue Key */}
+          {/* Estado de Sincronización, Jira Issue Key y Botón Actualizar Estado */}
           <div className="flex flex-wrap items-center gap-2 self-start md:self-center shrink-0">
             <ServiceRequestSyncBadge syncStatus={record.syncStatus} />
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-mono text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
               Jira: {record.jiraIssueKey || '—'}
             </span>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={handleRefreshFromJira}
+              isLoading={refreshing}
+              disabled={refreshing || refreshCooldown}
+              icon={
+                <RefreshCw
+                  className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`}
+                />
+              }
+            >
+              Actualizar estado
+            </Button>
           </div>
         </div>
+
+        {refreshFeedback && (
+          <div className="mt-3 px-3.5 py-2 rounded-xl bg-sky-50/80 border border-sky-200 text-xs font-medium text-[#0F4C81] flex items-center justify-between">
+            <span>{refreshFeedback}</span>
+            {record.jiraLastSyncAt && (
+              <span className="font-mono text-[11px] text-slate-500">
+                Última sincronización: {formatDateTime(record.jiraLastSyncAt)}
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Metadatos rápidos */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 text-xs">
@@ -192,9 +248,9 @@ export const ServiceRequestDetailPage: React.FC<
         </div>
       </div>
 
-      {/* Cuerpo Principal: Datos Enviados + Timeline + Panel Lateral */}
+      {/* Cuerpo Principal: Datos Enviados + Respuestas + Timeline + Panel Lateral */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Columna Izquierda (2/3): Datos enviados y Timeline */}
+        {/* Columna Izquierda (2/3): Datos enviados, Respuestas del equipo de soporte y Timeline */}
         <div className="lg:col-span-2 space-y-6">
           {/* Datos enviados en el formulario */}
           <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs space-y-4">
@@ -235,6 +291,60 @@ export const ServiceRequestDetailPage: React.FC<
                 );
               })}
             </div>
+          </div>
+
+          {/* Respuestas del equipo de soporte (Comentarios públicos sincronizados desde Jira) */}
+          <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                <MessageSquare
+                  className="w-4 h-4 text-[#0F6CBD]"
+                  aria-hidden="true"
+                />
+                Respuestas del equipo de soporte
+              </h2>
+              <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
+                {publicComments.length}{' '}
+                {publicComments.length === 1 ? 'respuesta' : 'respuestas'}
+              </span>
+            </div>
+
+            {publicComments.length === 0 ? (
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 text-xs text-slate-500 flex items-center justify-between gap-3">
+                <span>
+                  Aún no se registran respuestas públicas del equipo de soporte para esta solicitud.
+                </span>
+                <button
+                  type="button"
+                  onClick={handleRefreshFromJira}
+                  disabled={refreshing || refreshCooldown}
+                  className="text-[#0F6CBD] hover:underline font-semibold shrink-0 cursor-pointer disabled:opacity-50"
+                >
+                  Consultar ahora
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {publicComments.map((comment) => (
+                  <div
+                    key={comment.jiraCommentId || comment.id}
+                    className="p-4 rounded-xl bg-sky-50/40 border border-sky-200/80 space-y-1.5"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-xs font-bold text-[#0F4C81]">
+                        {comment.authorDisplayName}
+                      </span>
+                      <time className="text-[11px] font-mono text-slate-500">
+                        {formatDateTime(comment.createdAt)}
+                      </time>
+                    </div>
+                    <p className="text-xs sm:text-sm text-slate-800 whitespace-pre-line leading-relaxed">
+                      {comment.body}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Historial / Timeline conceptual según requiera o no aprobación */}
@@ -315,7 +425,7 @@ export const ServiceRequestDetailPage: React.FC<
           </div>
         </div>
 
-        {/* Columna Derecha (1/3): SLA Objetivo + Sincronización Jira + Solicitante */}
+        {/* Columna Derecha (1/3): SLA Objetivo + Aprobación + Sincronización Jira + Solicitante */}
         <div className="space-y-6">
           {/* Tarjeta SLA por Servicio */}
           <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs space-y-4">
@@ -332,7 +442,25 @@ export const ServiceRequestDetailPage: React.FC<
                 SLA objetivo
               </span>
               <ServiceSlaBadge slaLabel={record.slaTargetLabel} />
+              {record.jiraSlaSummary && (
+                <p className="text-[11px] font-mono font-semibold text-[#0F4C81] pt-1">
+                  Estado SLA Jira: {record.jiraSlaSummary}
+                </p>
+              )}
             </div>
+
+            {record.requiresApproval && (
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-2">
+                <span className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-[#0F6CBD]" />
+                  Aprobación
+                </span>
+                <ServiceRequestApprovalBadge
+                  approvalStatus={record.approvalStatus || 'PENDING_APPROVAL'}
+                  size="sm"
+                />
+              </div>
+            )}
 
             <p className="text-[11px] text-slate-500 leading-relaxed">
               {record.requiresApproval
@@ -361,6 +489,22 @@ export const ServiceRequestDetailPage: React.FC<
                 <span className="text-slate-500">Jira issue key</span>
                 <span className="font-mono font-bold text-slate-800">
                   {record.jiraIssueKey || '—'}
+                </span>
+              </div>
+
+              {record.jiraStatus && (
+                <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
+                  <span className="text-slate-500">Estado en Jira</span>
+                  <span className="font-semibold text-slate-800">
+                    {record.jiraStatus}
+                  </span>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
+                <span className="text-slate-500">Última actualización</span>
+                <span className="font-mono text-slate-700">
+                  {formatDateTime(record.jiraLastSyncAt || record.updatedAt)}
                 </span>
               </div>
 

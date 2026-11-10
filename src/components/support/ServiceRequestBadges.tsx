@@ -8,10 +8,14 @@ import {
   FileCheck,
   Hourglass,
   Wrench,
+  XCircle,
+  ShieldCheck,
 } from 'lucide-react';
 import {
+  ServiceRequestApprovalStatus,
   ServiceRequestStatus,
   ServiceRequestSyncStatus,
+  SERVICE_REQUEST_APPROVAL_LABELS,
   SERVICE_REQUEST_STATUS_LABELS,
   SERVICE_REQUEST_SYNC_LABELS,
 } from '../../types/serviceRequest';
@@ -40,6 +44,10 @@ export const ServiceRequestStatusBadge: React.FC<StatusBadgeProps> = ({
       classes: 'bg-blue-50 text-blue-800 border-blue-200',
       icon: <Clock className="w-3 h-3 shrink-0" aria-hidden="true" />,
     },
+    IN_PROGRESS: {
+      classes: 'bg-indigo-50 text-indigo-800 border-indigo-200',
+      icon: <Wrench className="w-3 h-3 shrink-0" aria-hidden="true" />,
+    },
     PENDING_APPROVAL: {
       classes: 'bg-amber-50 text-amber-800 border-amber-200',
       icon: <Hourglass className="w-3 h-3 shrink-0" aria-hidden="true" />,
@@ -48,9 +56,17 @@ export const ServiceRequestStatusBadge: React.FC<StatusBadgeProps> = ({
       classes: 'bg-indigo-50 text-indigo-800 border-indigo-200',
       icon: <Wrench className="w-3 h-3 shrink-0" aria-hidden="true" />,
     },
+    RESOLVED: {
+      classes: 'bg-teal-50 text-teal-800 border-teal-200',
+      icon: <CheckCircle2 className="w-3 h-3 shrink-0" aria-hidden="true" />,
+    },
     COMPLETED: {
       classes: 'bg-emerald-50 text-emerald-800 border-emerald-200',
       icon: <CheckCircle2 className="w-3 h-3 shrink-0" aria-hidden="true" />,
+    },
+    REJECTED: {
+      classes: 'bg-rose-50 text-rose-800 border-rose-200',
+      icon: <XCircle className="w-3 h-3 shrink-0" aria-hidden="true" />,
     },
   };
 
@@ -61,7 +77,51 @@ export const ServiceRequestStatusBadge: React.FC<StatusBadgeProps> = ({
       className={`inline-flex items-center gap-1.5 font-semibold rounded-full border ${sizeClass} ${current.classes}`}
     >
       {current.icon}
-      <span>{SERVICE_REQUEST_STATUS_LABELS[status]}</span>
+      <span>{SERVICE_REQUEST_STATUS_LABELS[status] || status}</span>
+    </span>
+  );
+};
+
+interface ApprovalBadgeProps {
+  approvalStatus?: ServiceRequestApprovalStatus;
+  size?: 'sm' | 'md';
+}
+
+export const ServiceRequestApprovalBadge: React.FC<ApprovalBadgeProps> = ({
+  approvalStatus = 'PENDING_APPROVAL',
+  size = 'md',
+}) => {
+  if (approvalStatus === 'NOT_REQUIRED') return null;
+
+  const sizeClass =
+    size === 'sm' ? 'px-2 py-0.5 text-[11px]' : 'px-2.5 py-1 text-xs';
+
+  const config: Record<
+    Exclude<ServiceRequestApprovalStatus, 'NOT_REQUIRED'>,
+    { classes: string; icon: React.ReactNode }
+  > = {
+    PENDING_APPROVAL: {
+      classes: 'bg-amber-50 text-amber-800 border-amber-200',
+      icon: <Hourglass className="w-3 h-3 text-amber-600 shrink-0" aria-hidden="true" />,
+    },
+    APPROVED: {
+      classes: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+      icon: <ShieldCheck className="w-3 h-3 text-emerald-600 shrink-0" aria-hidden="true" />,
+    },
+    REJECTED: {
+      classes: 'bg-rose-50 text-rose-800 border-rose-200',
+      icon: <XCircle className="w-3 h-3 text-rose-600 shrink-0" aria-hidden="true" />,
+    },
+  };
+
+  const current = config[approvalStatus] || config.PENDING_APPROVAL;
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 font-semibold rounded-full border ${sizeClass} ${current.classes}`}
+    >
+      {current.icon}
+      <span>{SERVICE_REQUEST_APPROVAL_LABELS[approvalStatus]}</span>
     </span>
   );
 };
