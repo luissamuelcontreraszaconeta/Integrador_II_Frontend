@@ -59,7 +59,7 @@ export const MOCK_LOTS: Lot[] = [
   {
     id: 'lot-001',
     code: 'EXP-2026-001',
-    qrToken: 'EXP2026001HASH98412089421',
+    qrToken: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
     status: 'READY_FOR_DISPATCH',
     createdAt: '2026-08-20T08:30:00Z',
     updatedAt: '2026-08-30T14:15:00Z',

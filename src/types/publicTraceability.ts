@@ -1,21 +1,30 @@
 export interface PublicTraceabilityData {
   valid: boolean;
+  authentic?: boolean;
+  resultadoAutenticidad?: string;
+  mensaje?: string;
+  lotCode?: string;
   codigo: string;
   producto: string;
   especie: string;
   fechaProduccion: string;
+  fechaRelevante?: string;
   volumen: number;
   unidad: string;
   plantaProcesamiento: string;
   proveedor: string;
   embarcacion: string;
   puertoOrigen: string;
+  estadoSanitario?: string;
+  estadoGeneral: string;
   estadoCalidad: string;
   estadoCadenaFrio: string;
+  resumenCadenaFrio?: string;
   documentacionCompleta: boolean;
   estadoCertificacion: string;
   numeroCertificadoSanitario?: string;
-  estadoGeneral: string;
+  estadoDespacho?: string;
+  puertoDestino?: string;
   ultimaActualizacion: string;
   qrToken: string;
 }
