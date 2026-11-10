@@ -70,6 +70,7 @@ export const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({
   const [requiredPermissions, setRequiredPermissions] = useState('');
   const [reason, setReason] = useState('');
   const [attachmentName, setAttachmentName] = useState('');
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -98,6 +99,7 @@ export const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({
       setRequiredPermissions('');
       setReason('');
       setAttachmentName('');
+      setAttachmentFile(null);
     }
   }, [isOpen, service?.code]);
 
@@ -140,9 +142,6 @@ export const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({
     if (service.code === 'SR-INF-02') {
       if (!documentQueryType.trim()) {
         nextErrors.documentQueryType = 'Selecciona el tipo de consulta documental.';
-      }
-      if (!additionalDetail.trim()) {
-        nextErrors.additionalDetail = 'Ingresa el detalle adicional de la consulta.';
       }
     }
 
@@ -303,22 +302,41 @@ export const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({
         lotCode: lotCode.trim(),
         requestedInformation: requiredInfo.trim(),
         additionalDetail: additionalDetail.trim() || undefined,
+        documentQueryType: documentQueryType.trim() || undefined,
+        observedField: observedField.trim() || undefined,
+        problemDescription: problemDescription.trim() || undefined,
+        fieldToCorrect: fieldToCorrect.trim() || undefined,
+        currentValue: currentValue.trim() || undefined,
+        proposedValue: proposedValue.trim() || undefined,
+        justification: justification.trim() || undefined,
+        workerName: workerName.trim() || undefined,
+        affectedUser: affectedUser.trim() || undefined,
+        institutionalEmail: institutionalEmail.trim() || undefined,
+        area: area.trim() || undefined,
+        requiredRole: requiredRole.trim() || undefined,
+        accessRequestType: accessRequestType.trim() || undefined,
+        currentRoleField: currentRoleField.trim() || undefined,
+        requiredPermissions: requiredPermissions.trim() || undefined,
+        reason: reason.trim() || undefined,
         relatedLotCode: lotCode.trim() || undefined,
         attachmentName: attachmentName || undefined,
+        attachmentFile: attachmentFile || null,
         submittedFields: buildSubmittedFields(),
         requesterName: currentUser?.name || 'Usuario Operativo ExporTrace',
         requesterEmail: currentUser?.email || 'operaciones@exportrace.pe',
         requesterRole: currentRole || 'PRODUCCION',
-        requesterArea: currentUser?.area || 'Operaciones ExporTrace',
+        requesterArea: area.trim() || currentUser?.area || 'Operaciones ExporTrace',
       });
       setCreatedRecord(created);
       if (onSuccess) {
         onSuccess(created);
       }
-    } catch {
-      setSubmitError(
-        'No se pudo registrar la solicitud en este momento. Verifica los datos e intenta nuevamente.'
-      );
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error && err.message
+          ? err.message
+          : 'No se pudo registrar la solicitud en este momento. Verifica los datos e intenta nuevamente.';
+      setSubmitError(msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -414,7 +432,10 @@ export const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({
           {attachmentName && (
             <button
               type="button"
-              onClick={() => setAttachmentName('')}
+              onClick={() => {
+                setAttachmentName('');
+                setAttachmentFile(null);
+              }}
               className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
               title="Quitar archivo"
             >
@@ -425,11 +446,13 @@ export const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({
             Seleccionar archivo
             <input
               type="file"
+              accept=".pdf,.png,.jpg,.jpeg,.webp"
               className="sr-only"
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) {
                   setAttachmentName(file.name);
+                  setAttachmentFile(file);
                 }
               }}
             />
@@ -666,17 +689,17 @@ export const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({
                   }`}
                 >
                   <option value="">Selecciona el tipo de consulta...</option>
-                  <option value="Estado general del expediente digital del lote">
-                    Estado general del expediente digital del lote
+                  <option value="Documentos registrados">
+                    Documentos registrados
                   </option>
-                  <option value="Documentos registrados y pendientes de carga">
-                    Documentos registrados y pendientes de carga
+                  <option value="Documentos pendientes">
+                    Documentos pendientes
                   </option>
-                  <option value="Certificado sanitario SANIPES y anexos de calidad">
-                    Certificado sanitario SANIPES y anexos de calidad
+                  <option value="Estado del expediente digital">
+                    Estado del expediente digital
                   </option>
-                  <option value="Guías de despacho y documentación de embarque">
-                    Guías de despacho y documentación de embarque
+                  <option value="Consulta completa">
+                    Consulta completa
                   </option>
                 </select>
                 {errors.documentQueryType && (
@@ -691,7 +714,7 @@ export const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({
                   htmlFor="sr-doc-detail"
                   className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
                 >
-                  Detalle adicional <span className="text-rose-500">*</span>
+                  Detalle adicional <span className="text-slate-400 font-normal">(Opcional)</span>
                 </label>
                 <textarea
                   id="sr-doc-detail"
@@ -882,19 +905,41 @@ export const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Input
-                  id="sr-area-acc01"
-                  name="area"
-                  label="Área"
-                  required
-                  placeholder="Ej. Planta de Producción, QA, Comercio Exterior..."
-                  value={area}
-                  onChange={(e) => {
-                    setArea(e.target.value);
-                    clearError('area');
-                  }}
-                  error={errors.area}
-                />
+                <div>
+                  <label
+                    htmlFor="sr-area-acc01"
+                    className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+                  >
+                    Área <span className="text-rose-500">*</span>
+                  </label>
+                  <select
+                    id="sr-area-acc01"
+                    value={area}
+                    onChange={(e) => {
+                      setArea(e.target.value);
+                      clearError('area');
+                    }}
+                    className={`w-full bg-white border rounded-lg px-3.5 py-2 text-sm text-slate-900 focus:outline-hidden focus:ring-2 cursor-pointer ${
+                      errors.area
+                        ? 'border-rose-400 focus:ring-rose-400/30'
+                        : 'border-slate-300 focus:ring-[#0F6CBD]/20 focus:border-[#0F6CBD]'
+                    }`}
+                  >
+                    <option value="">Selecciona el área...</option>
+                    <option value="Producción">Producción</option>
+                    <option value="Calidad">Calidad</option>
+                    <option value="Logística">Logística</option>
+                    <option value="Administración">Administración</option>
+                    <option value="Gerencia">Gerencia</option>
+                    <option value="Informática / Soporte">Informática / Soporte</option>
+                    <option value="Otro">Otro</option>
+                  </select>
+                  {errors.area && (
+                    <p className="text-xs text-rose-600 font-medium mt-1">
+                      {errors.area}
+                    </p>
+                  )}
+                </div>
                 <div>
                   <label
                     htmlFor="sr-required-role"
@@ -916,21 +961,12 @@ export const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({
                     }`}
                   >
                     <option value="">Selecciona el rol...</option>
-                    <option value="PRODUCCION (Operaciones y Registro de Lotes)">
-                      PRODUCCION (Operaciones y Registro de Lotes)
-                    </option>
-                    <option value="QA (Aseguramiento de Calidad y Cadena de Frío)">
-                      QA (Aseguramiento de Calidad y Cadena de Frío)
-                    </option>
-                    <option value="LOGISTICA (Certificación SANIPES y Despacho)">
-                      LOGISTICA (Certificación SANIPES y Despacho)
-                    </option>
-                    <option value="GERENCIA (Supervisión y KPIs Ejecutivos)">
-                      GERENCIA (Supervisión y KPIs Ejecutivos)
-                    </option>
-                    <option value="ADMINISTRADOR (Gestión Organizacional)">
-                      ADMINISTRADOR (Gestión Organizacional)
-                    </option>
+                    <option value="PRODUCCION">PRODUCCION</option>
+                    <option value="QA">QA</option>
+                    <option value="LOGISTICA">LOGISTICA</option>
+                    <option value="GERENCIA">GERENCIA</option>
+                    <option value="ADMINISTRADOR">ADMINISTRADOR</option>
+                    <option value="SUPERADMIN">SUPERADMIN</option>
                   </select>
                   {errors.requiredRole && (
                     <p className="text-xs text-rose-600 font-medium mt-1">
@@ -1007,19 +1043,41 @@ export const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Input
-                  id="sr-area-acc02"
-                  name="area"
-                  label="Área"
-                  required
-                  placeholder="Área actual del usuario"
-                  value={area}
-                  onChange={(e) => {
-                    setArea(e.target.value);
-                    clearError('area');
-                  }}
-                  error={errors.area}
-                />
+                <div>
+                  <label
+                    htmlFor="sr-area-acc02"
+                    className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+                  >
+                    Área <span className="text-rose-500">*</span>
+                  </label>
+                  <select
+                    id="sr-area-acc02"
+                    value={area}
+                    onChange={(e) => {
+                      setArea(e.target.value);
+                      clearError('area');
+                    }}
+                    className={`w-full bg-white border rounded-lg px-3.5 py-2 text-sm text-slate-900 focus:outline-hidden focus:ring-2 cursor-pointer ${
+                      errors.area
+                        ? 'border-rose-400 focus:ring-rose-400/30'
+                        : 'border-slate-300 focus:ring-[#0F6CBD]/20 focus:border-[#0F6CBD]'
+                    }`}
+                  >
+                    <option value="">Selecciona el área...</option>
+                    <option value="Producción">Producción</option>
+                    <option value="Calidad">Calidad</option>
+                    <option value="Logística">Logística</option>
+                    <option value="Administración">Administración</option>
+                    <option value="Gerencia">Gerencia</option>
+                    <option value="Informática / Soporte">Informática / Soporte</option>
+                    <option value="Otro">Otro</option>
+                  </select>
+                  {errors.area && (
+                    <p className="text-xs text-rose-600 font-medium mt-1">
+                      {errors.area}
+                    </p>
+                  )}
+                </div>
                 <div>
                   <label
                     htmlFor="sr-access-req-type"
@@ -1041,17 +1099,11 @@ export const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({
                     }`}
                   >
                     <option value="">Selecciona la acción...</option>
-                    <option value="Cambio de rol por rotación de área">
-                      Cambio de rol por rotación de área
+                    <option value="Cambio de permisos">
+                      Cambio de permisos
                     </option>
-                    <option value="Asignación de permisos adicionales">
-                      Asignación de permisos adicionales
-                    </option>
-                    <option value="Retiro parcial de permisos">
-                      Retiro parcial de permisos
-                    </option>
-                    <option value="Desactivación o retiro total de accesos">
-                      Desactivación o retiro total de accesos
+                    <option value="Retiro de permisos">
+                      Retiro de permisos
                     </option>
                   </select>
                   {errors.accessRequestType && (
@@ -1063,32 +1115,75 @@ export const ServiceRequestModal: React.FC<ServiceRequestModalProps> = ({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Input
-                  id="sr-current-role"
-                  name="currentRoleField"
-                  label="Rol actual"
-                  required
-                  placeholder="Ej. PRODUCCION"
-                  value={currentRoleField}
-                  onChange={(e) => {
-                    setCurrentRoleField(e.target.value);
-                    clearError('currentRoleField');
-                  }}
-                  error={errors.currentRoleField}
-                />
-                <Input
-                  id="sr-req-perms"
-                  name="requiredPermissions"
-                  label="Rol/permisos requeridos"
-                  required
-                  placeholder="Ej. QA o retiro de permiso de despacho"
-                  value={requiredPermissions}
-                  onChange={(e) => {
-                    setRequiredPermissions(e.target.value);
-                    clearError('requiredPermissions');
-                  }}
-                  error={errors.requiredPermissions}
-                />
+                <div>
+                  <label
+                    htmlFor="sr-current-role"
+                    className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+                  >
+                    Rol actual <span className="text-rose-500">*</span>
+                  </label>
+                  <select
+                    id="sr-current-role"
+                    value={currentRoleField}
+                    onChange={(e) => {
+                      setCurrentRoleField(e.target.value);
+                      clearError('currentRoleField');
+                    }}
+                    className={`w-full bg-white border rounded-lg px-3.5 py-2 text-sm text-slate-900 focus:outline-hidden focus:ring-2 cursor-pointer ${
+                      errors.currentRoleField
+                        ? 'border-rose-400 focus:ring-rose-400/30'
+                        : 'border-slate-300 focus:ring-[#0F6CBD]/20 focus:border-[#0F6CBD]'
+                    }`}
+                  >
+                    <option value="">Selecciona el rol actual...</option>
+                    <option value="PRODUCCION">PRODUCCION</option>
+                    <option value="QA">QA</option>
+                    <option value="LOGISTICA">LOGISTICA</option>
+                    <option value="GERENCIA">GERENCIA</option>
+                    <option value="ADMINISTRADOR">ADMINISTRADOR</option>
+                    <option value="SUPERADMIN">SUPERADMIN</option>
+                  </select>
+                  {errors.currentRoleField && (
+                    <p className="text-xs text-rose-600 font-medium mt-1">
+                      {errors.currentRoleField}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label
+                    htmlFor="sr-req-perms"
+                    className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
+                  >
+                    Rol/permisos requeridos <span className="text-rose-500">*</span>
+                  </label>
+                  <select
+                    id="sr-req-perms"
+                    value={requiredPermissions}
+                    onChange={(e) => {
+                      setRequiredPermissions(e.target.value);
+                      clearError('requiredPermissions');
+                    }}
+                    className={`w-full bg-white border rounded-lg px-3.5 py-2 text-sm text-slate-900 focus:outline-hidden focus:ring-2 cursor-pointer ${
+                      errors.requiredPermissions
+                        ? 'border-rose-400 focus:ring-rose-400/30'
+                        : 'border-slate-300 focus:ring-[#0F6CBD]/20 focus:border-[#0F6CBD]'
+                    }`}
+                  >
+                    <option value="">Selecciona rol o permiso...</option>
+                    <option value="PRODUCCION">PRODUCCION</option>
+                    <option value="QA">QA</option>
+                    <option value="LOGISTICA">LOGISTICA</option>
+                    <option value="GERENCIA">GERENCIA</option>
+                    <option value="ADMINISTRADOR">ADMINISTRADOR</option>
+                    <option value="SUPERADMIN">SUPERADMIN</option>
+                    <option value="Retiro total de accesos">Retiro total de accesos</option>
+                  </select>
+                  {errors.requiredPermissions && (
+                    <p className="text-xs text-rose-600 font-medium mt-1">
+                      {errors.requiredPermissions}
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div>
