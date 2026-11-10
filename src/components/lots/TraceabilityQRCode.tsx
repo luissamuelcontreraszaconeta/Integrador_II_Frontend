@@ -1,6 +1,6 @@
 import React from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, ExternalLink } from 'lucide-react';
 import { PUBLIC_APP_URL } from '../../services/apiConfig';
 
 interface TraceabilityQRCodeProps {
@@ -18,12 +18,20 @@ export const TraceabilityQRCode: React.FC<TraceabilityQRCodeProps> = ({
   includeText = true,
   className = '',
 }) => {
-  // Use centralized PUBLIC_APP_URL
-  const publicBaseUrl = PUBLIC_APP_URL;
+  const publicBaseUrl = PUBLIC_APP_URL.replace(/\/+$/, '');
+  const cleanToken = (qrToken || '').trim();
+  const verificationPath = cleanToken ? `/verificar/${encodeURIComponent(cleanToken)}` : '';
+  const verificationUrl = cleanToken ? `${publicBaseUrl}${verificationPath}` : '';
 
-  // Token fallback if not present
-  const effectiveToken = qrToken || `QR-${lotCode.replace(/[^a-zA-Z0-9]/g, '')}`;
-  const verificationUrl = `${publicBaseUrl.replace(/\/$/, '')}/verificar/${effectiveToken}`;
+  if (!cleanToken) {
+    return (
+      <div className={`flex flex-col items-center justify-center text-center p-3 bg-slate-50 rounded-xl border border-slate-200 ${className}`}>
+        <span className="text-[11px] text-slate-500 font-medium">
+          Token QR pendiente de sincronización
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className={`flex flex-col items-center justify-center text-center ${className}`}>
@@ -39,19 +47,35 @@ export const TraceabilityQRCode: React.FC<TraceabilityQRCodeProps> = ({
         />
       </div>
 
-      {includeText && (
+      {includeText ? (
         <div className="mt-2 space-y-1">
           <span className="text-xs font-mono font-bold text-slate-800 block">
             {lotCode}
           </span>
           <p className="text-[11px] text-slate-500 font-medium">
-            Escanee para verificar
+            Escanee para verificar autenticidad
           </p>
-          <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 text-[10px] font-semibold text-[#0F6CBD] border border-blue-200">
+          <a
+            href={verificationPath}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 hover:bg-blue-100 text-[10px] font-semibold text-[#0F6CBD] border border-blue-200 transition-colors no-print"
+          >
             <ShieldCheck className="w-3 h-3" />
             <span>Verificación ExporTrace</span>
-          </div>
+            <ExternalLink className="w-2.5 h-2.5" />
+          </a>
         </div>
+      ) : (
+        <a
+          href={verificationPath}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-semibold text-[#0F6CBD] hover:underline no-print"
+        >
+          <span>Probar enlace QR</span>
+          <ExternalLink className="w-2.5 h-2.5" />
+        </a>
       )}
     </div>
   );

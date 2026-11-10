@@ -56,7 +56,7 @@ export const roleGuard = {
     // Operational Module paths (Role Base OR Granular Permission OR Individual Module Exception MODULE_*)
     if (path.startsWith('/lots/new')) return role === 'PRODUCCION' || hasPerm('LOTS_CREATE') || hasPerm('MODULE_LOTS');
     if (path.startsWith('/lots')) return role === 'PRODUCCION' || role === 'QA' || role === 'LOGISTICA' || role === 'GERENCIA' || hasPerm('LOTS_VIEW') || hasPerm('MODULE_LOTS');
-    if (path.startsWith('/quality/coldchain')) return role === 'QA' || hasPerm('COLD_CHAIN_VIEW') || hasPerm('MODULE_COLD_CHAIN') || hasPerm('MODULE_QUALITY');
+    if (path.startsWith('/quality/coldchain') || path.startsWith('/cold-chain')) return role === 'QA' || hasPerm('COLD_CHAIN_VIEW') || hasPerm('MODULE_COLD_CHAIN') || hasPerm('MODULE_QUALITY');
     if (path.startsWith('/quality')) return role === 'QA' || hasPerm('QUALITY_VIEW') || hasPerm('MODULE_QUALITY');
     if (path.startsWith('/logistics')) return role === 'LOGISTICA' || hasPerm('LOGISTICS_VIEW') || hasPerm('MODULE_LOGISTICS');
     if (path.startsWith('/certification')) return role === 'LOGISTICA' || role === 'QA' || hasPerm('CERTIFICATION_VIEW') || hasPerm('MODULE_CERTIFICATION');

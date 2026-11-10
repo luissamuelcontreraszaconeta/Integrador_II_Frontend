@@ -51,37 +51,57 @@ import { IncidentDetailPage } from './pages/Support/IncidentDetailPage';
 import { MyServiceRequestsPage } from './pages/Support/MyServiceRequestsPage';
 import { ServiceRequestDetailPage } from './pages/Support/ServiceRequestDetailPage';
 
+const normalizeRoutePath = (rawPath: string): string => {
+  if (!rawPath || rawPath === '/') return '/';
+  return rawPath.replace(/\/+$/, '') || '/';
+};
+
 const MainAppRouter: React.FC = () => {
   const { currentRole, currentUser } = useAuth();
   const isAuthenticated = authGuard.isAuthenticated();
 
   const [currentPath, setCurrentPath] = useState<string>(() => {
-    const p = window.location.pathname;
+    const p = normalizeRoutePath(window.location.pathname);
     return p === '/' ? (currentRole ? authService.getInitialRouteByRole(currentRole) : '/dashboard') : p;
   });
 
   const navigate = (path: string) => {
-    setCurrentPath(path);
-    window.history.pushState({}, '', path);
+    const normalized = normalizeRoutePath(path);
+    setCurrentPath(normalized);
+    window.history.pushState({}, '', normalized);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   useEffect(() => {
     const handlePopState = () => {
-      setCurrentPath(window.location.pathname);
+      setCurrentPath(normalizeRoutePath(window.location.pathname));
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Public Traceability Verification route (accessible without authentication)
-  if (currentPath.startsWith('/verificar/')) {
-    const token = decodeURIComponent(currentPath.replace('/verificar/', ''));
+  // Public Traceability Verification route (accessible without authentication or RBAC)
+  if (currentPath === '/verificar' || currentPath.startsWith('/verificar/')) {
+    const rawSegment = currentPath === '/verificar' ? '' : currentPath.replace(/^\/verificar\//, '');
+    const token = decodeURIComponent(rawSegment);
     return <PublicTraceabilityPage token={token} onNavigate={navigate} />;
   }
 
-  // Redirect after successful login using role from response
+  // Redirect after successful login using role from response (or preserve requested deep route if authorized)
   const handleLoginSuccess = (redirectUrl: string) => {
+    const requestedDeepPath = normalizeRoutePath(window.location.pathname);
+    const activeUser = authService.getCurrentUser();
+    if (
+      requestedDeepPath &&
+      requestedDeepPath !== '/' &&
+      requestedDeepPath !== '/login' &&
+      requestedDeepPath !== '/superadmin/login' &&
+      activeUser?.role &&
+      roleGuard.canAccessRoute(activeUser.role, requestedDeepPath, activeUser.permissions)
+    ) {
+      navigate(requestedDeepPath);
+      return;
+    }
     navigate(redirectUrl);
   };
 
@@ -213,13 +233,13 @@ const MainAppRouter: React.FC = () => {
       const id = currentPath.replace('/quality/inspect/', '');
       return <InspectionFormPage lotId={id} onNavigate={navigate} />;
     }
-    if (currentPath === '/quality/coldchain') {
+    if (currentPath === '/quality/coldchain' || currentPath === '/cold-chain' || currentPath.startsWith('/cold-chain/')) {
       return <ColdChainPage onNavigate={navigate} />;
     }
     if (currentPath === '/logistics') {
       return <LogisTracDashboardPage onNavigate={navigate} />;
     }
-    if (currentPath === '/certification') {
+    if (currentPath === '/certification' || currentPath.startsWith('/certification/')) {
       return <CertificationTrackerPage onNavigate={navigate} />;
     }
     if (currentPath === '/dispatch') {
