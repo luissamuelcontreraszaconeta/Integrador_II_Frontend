@@ -3,6 +3,7 @@ import { PageHeader } from '../../components/layout/PageHeader';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { adminService } from '../../services/adminService';
+import { IncidentErrorPanel } from '../../components/support/IncidentErrorPanel';
 import { RoleAdmin, PermissionItem, ModuleItem } from '../../types/admin';
 import {
   ShieldCheck,
@@ -168,15 +169,17 @@ export const RoleManagementPage: React.FC<RoleManagementPageProps> = ({ onNaviga
       )}
 
       {error && (
-        <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs flex items-center justify-between shadow-xs">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
-            <span>{error}</span>
-          </div>
-          <Button variant="outline" size="sm" onClick={() => setError(null)}>
-            Cerrar
-          </Button>
-        </div>
+        <IncidentErrorPanel
+          title="Error en Gestión de Roles y Permisos RBAC"
+          message={error}
+          module="ROLES"
+          route="/admin/roles"
+          category="ACCESS_CONTROL"
+          actionAttempted="Consultar o guardar matriz de permisos RBAC"
+          onRetry={loadData}
+          onDismiss={() => setError(null)}
+          onNavigate={onNavigate}
+        />
       )}
 
       {/* Main Grid: Left Roles Selector | Right Permissions Matrix */}

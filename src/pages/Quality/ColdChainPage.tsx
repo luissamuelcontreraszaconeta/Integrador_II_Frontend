@@ -7,6 +7,8 @@ import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { ColdChainGraph } from '../../components/lots/ColdChainGraph';
 import { coldChainApiService } from '../../services/qualityService';
+import { IncidentErrorPanel } from '../../components/support/IncidentErrorPanel';
+import { ApiError } from '../../services/apiClient';
 import { ColdChainIncident, ThermalProfile } from '../../types/quality';
 import { Thermometer, Plus, Send, AlertTriangle, ShieldCheck, CheckCircle2, Clock, Info } from 'lucide-react';
 
@@ -32,6 +34,7 @@ export const ColdChainPage: React.FC<ColdChainPageProps> = ({ onNavigate }) => {
   const [actionsTaken, setActionsTaken] = useState('Re-estabilización en túnel de congelación y verificación con termómetro patrón.');
   const [resolveError, setResolveError] = useState<string | null>(null);
   const [isResolving, setIsResolving] = useState(false);
+  const [coldError, setColdError] = useState<{ message: string; status?: number; code?: string; reqId?: string; action?: string } | null>(null);
 
   const selectedLot = lots.find((l) => l.id === selectedLotId) || lots[0];
 
@@ -64,13 +67,21 @@ export const ColdChainPage: React.FC<ColdChainPageProps> = ({ onNavigate }) => {
     e.preventDefault();
     if (!selectedLotId) return;
     setIsSubmitting(true);
+    setColdError(null);
     try {
       await addColdChainLog(selectedLotId, Number(temp), location, obs);
       setObs('Auditoría térmica de rutina');
       await loadThermalData(selectedLotId);
       if (refreshData) await refreshData();
     } catch (err: any) {
-      alert(err.message || 'Error al registrar temperatura');
+      const apiErr = err as ApiError;
+      setColdError({
+        message: apiErr?.message || 'Error al registrar lectura de temperatura en cámara.',
+        status: apiErr?.status,
+        code: apiErr?.errorCode,
+        reqId: apiErr?.technicalRequestId,
+        action: `Registrar temperatura (${temp}°C) en cámara ${location}`,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -122,6 +133,24 @@ export const ColdChainPage: React.FC<ColdChainPageProps> = ({ onNavigate }) => {
           { label: 'Cadena de Frío' },
         ]}
       />
+
+      {coldError && (
+        <IncidentErrorPanel
+          title="Error en registro de Cadena de Frío"
+          message={coldError.message}
+          httpStatus={coldError.status}
+          errorCode={coldError.code}
+          technicalRequestId={coldError.reqId}
+          module="FRIO"
+          route="/quality/coldchain"
+          category="COLD_CHAIN"
+          lotId={Number(selectedLot?.id) || undefined}
+          lotCode={selectedLot?.code}
+          actionAttempted={coldError.action || 'Registrar lectura térmica en cadena de frío'}
+          onDismiss={() => setColdError(null)}
+          onNavigate={onNavigate}
+        />
+      )}
 
       {/* Lot selector bar + Thermal Profile Badge */}
       <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">

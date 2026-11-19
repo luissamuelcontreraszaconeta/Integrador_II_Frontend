@@ -4,6 +4,8 @@ import { PageHeader } from '../../components/layout/PageHeader';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { Button } from '../../components/ui/Button';
+import { IncidentErrorPanel } from '../../components/support/IncidentErrorPanel';
+import { ApiError } from '../../services/apiClient';
 import { ProductType, UnitType } from '../../types/lot';
 import { Package, Ship, Factory, Save, Send, X, Anchor } from 'lucide-react';
 
@@ -14,6 +16,7 @@ interface RegisterLotPageProps {
 export const RegisterLotPage: React.FC<RegisterLotPageProps> = ({ onNavigate }) => {
   const { createLot } = useLots();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<{ message: string; status?: number; code?: string; reqId?: string } | null>(null);
 
   const [productType, setProductType] = useState<ProductType>('POTA_CONGELADA_BLOCK');
   const [productName, setProductName] = useState('Pota congelada en bloques (Giant Squid Blocks)');
@@ -64,6 +67,7 @@ export const RegisterLotPage: React.FC<RegisterLotPageProps> = ({ onNavigate }) 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitError(null);
     try {
       const newLot = await createLot({
         productName,
@@ -81,8 +85,14 @@ export const RegisterLotPage: React.FC<RegisterLotPageProps> = ({ onNavigate }) 
         notes,
       });
       onNavigate(`/lots/${newLot.id}`);
-    } catch (err) {
-      console.error('Error registrando lote:', err);
+    } catch (err: unknown) {
+      const apiErr = err as ApiError;
+      setSubmitError({
+        message: apiErr?.message || 'No se pudo registrar el lote en el sistema.',
+        status: apiErr?.status,
+        code: apiErr?.errorCode,
+        reqId: apiErr?.technicalRequestId,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -99,6 +109,22 @@ export const RegisterLotPage: React.FC<RegisterLotPageProps> = ({ onNavigate }) 
           { label: 'Nuevo Lote' },
         ]}
       />
+
+      {submitError && (
+        <IncidentErrorPanel
+          title="Error al registrar lote de producción"
+          message={submitError.message}
+          httpStatus={submitError.status}
+          errorCode={submitError.code}
+          technicalRequestId={submitError.reqId}
+          module="PRODUCCION"
+          route="/lots/new"
+          category="LOTS"
+          actionAttempted="Registrar nuevo lote de producción hidrobiológica"
+          onDismiss={() => setSubmitError(null)}
+          onNavigate={onNavigate}
+        />
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Section 1: General Product Info */}

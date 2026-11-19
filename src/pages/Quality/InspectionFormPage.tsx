@@ -19,6 +19,8 @@ import {
   FileCheck
 } from 'lucide-react';
 import { qualityService } from '../../services/qualityService';
+import { IncidentErrorPanel } from '../../components/support/IncidentErrorPanel';
+import { ApiError } from '../../services/apiClient';
 import type { QaEvidenceItem } from '../../types/quality';
 
 interface InspectionFormPageProps {
@@ -49,6 +51,9 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
   const [observations, setObservations] = useState('Auditoría organoléptica ejecutada según protocolo técnico SANIPES.');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [errorStatus, setErrorStatus] = useState<number | undefined>(undefined);
+  const [errorCode, setErrorCode] = useState<string | undefined>(undefined);
+  const [errorReqId, setErrorReqId] = useState<string | undefined>(undefined);
 
   // Real Photographic Evidence State
   const [selectedFiles, setSelectedFiles] = useState<SelectedFileEvidence[]>([]);
@@ -201,7 +206,11 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
 
       onNavigate(`/lots/${lot.id}`);
     } catch (err: any) {
-      setErrorMsg(err.message || 'Error al guardar la inspección QA.');
+      const apiErr = err as ApiError;
+      setErrorMsg(apiErr?.message || 'Error al guardar la inspección QA.');
+      setErrorStatus(apiErr?.status);
+      setErrorCode(apiErr?.errorCode);
+      setErrorReqId(apiErr?.technicalRequestId);
     } finally {
       setIsSubmitting(false);
     }
@@ -229,10 +238,21 @@ export const InspectionFormPage: React.FC<InspectionFormPageProps> = ({ lotId, o
       )}
 
       {errorMsg && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-800 flex items-center space-x-3 text-sm animate-fade-in">
-          <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0" />
-          <span>{errorMsg}</span>
-        </div>
+        <IncidentErrorPanel
+          title="Error en Inspección Organoléptica / Evidencias QA"
+          message={errorMsg}
+          httpStatus={errorStatus}
+          errorCode={errorCode}
+          technicalRequestId={errorReqId}
+          module="CALIDAD"
+          route={`/quality/inspect/${lot.id}`}
+          category="QUALITY"
+          lotId={Number(lot.id) || undefined}
+          lotCode={lot.code}
+          actionAttempted={`Guardar inspección organoléptica QA para el lote ${lot.code}`}
+          onDismiss={() => setErrorMsg(null)}
+          onNavigate={onNavigate}
+        />
       )}
 
       <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">

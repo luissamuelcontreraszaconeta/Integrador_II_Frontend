@@ -5,6 +5,8 @@ import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Select } from '../../components/ui/Select';
 import { AlertCard } from '../../components/ui/AlertCard';
+import { IncidentErrorPanel } from '../../components/support/IncidentErrorPanel';
+import { ApiError } from '../../services/apiClient';
 import { Truck, CheckCircle2, Lock, ShieldCheck, Send, Ship, AlertTriangle } from 'lucide-react';
 
 interface DispatchPageProps {
@@ -111,10 +113,17 @@ export const DispatchPage: React.FC<DispatchPageProps> = ({ lotId, onNavigate })
       </div>
 
       {errorMsg && (
-        <AlertCard
-          type="error"
-          title="Error en Despacho"
+        <IncidentErrorPanel
+          title="Error en Autorización de Despacho"
           message={errorMsg}
+          module="LOGISTICA"
+          route={`/dispatch/${lot.id}`}
+          category="LOGISTICS"
+          lotId={Number(lot.id) || undefined}
+          lotCode={lot.code}
+          actionAttempted={`Autorizar despacho y embarque de contenedor para lote ${lot.code}`}
+          onDismiss={() => setErrorMsg(null)}
+          onNavigate={onNavigate}
         />
       )}
 

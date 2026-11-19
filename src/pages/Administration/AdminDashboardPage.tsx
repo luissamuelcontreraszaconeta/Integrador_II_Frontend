@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Button } from '../../components/ui/Button';
 import { adminService } from '../../services/adminService';
+import { IncidentErrorPanel } from '../../components/support/IncidentErrorPanel';
 import { AdminDashboardData } from '../../types/admin';
 import {
   Users,
@@ -78,15 +79,17 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
       />
 
       {error && (
-        <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-            <span>{error}</span>
-          </div>
-          <Button variant="outline" size="sm" onClick={loadData}>
-            Reintentar
-          </Button>
-        </div>
+        <IncidentErrorPanel
+          title="Error al cargar el Panel Administrativo"
+          message={error}
+          module="ADMINISTRACION"
+          route="/admin"
+          category="ACCESS_CONTROL"
+          actionAttempted="Consultar métricas y bitácora del dashboard administrativo"
+          onRetry={loadData}
+          onDismiss={() => setError(null)}
+          onNavigate={onNavigate}
+        />
       )}
 
       {/* KPI Cards Grid */}

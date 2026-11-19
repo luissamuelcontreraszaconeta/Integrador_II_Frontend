@@ -9,6 +9,8 @@ import { ValidationChecklist } from '../../components/lots/ValidationChecklist';
 import { ColdChainGraph } from '../../components/lots/ColdChainGraph';
 import { QRCodeModal } from '../../components/lots/QRCodeModal';
 import { ExpedienteDigitalView } from '../../components/lots/ExpedienteDigitalView';
+import { IncidentErrorPanel } from '../../components/support/IncidentErrorPanel';
+import { ApiError } from '../../services/apiClient';
 import { SanitaryCertificate } from '../../types/certification';
 import { 
   QrCode, 
@@ -46,6 +48,7 @@ export const LotDetailPage: React.FC<LotDetailPageProps> = ({ lotId, onNavigate 
   const [qrModalOpen, setQrModalOpen] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const [certificate, setCertificate] = useState<SanitaryCertificate | null>(null);
+  const [opError, setOpError] = useState<{ message: string; action: string; status?: number; code?: string; reqId?: string } | null>(null);
 
   // Temperature entry form state
   const [tempVal, setTempVal] = useState<number>(-20.5);
@@ -72,8 +75,18 @@ export const LotDetailPage: React.FC<LotDetailPageProps> = ({ lotId, onNavigate 
 
   const handleRunValidation = async () => {
     setIsValidating(true);
+    setOpError(null);
     try {
       await runValidation(lot.id);
+    } catch (err: unknown) {
+      const apiErr = err as ApiError;
+      setOpError({
+        message: apiErr?.message || 'Error al ejecutar la validación integral del lote.',
+        action: `Ejecutar validación integral del lote ${lot.code}`,
+        status: apiErr?.status,
+        code: apiErr?.errorCode,
+        reqId: apiErr?.technicalRequestId,
+      });
     } finally {
       setIsValidating(false);
     }
@@ -81,13 +94,37 @@ export const LotDetailPage: React.FC<LotDetailPageProps> = ({ lotId, onNavigate 
 
   const handleAddTempLog = async (e: React.FormEvent) => {
     e.preventDefault();
-    await addColdChainLog(lot.id, Number(tempVal), tempLoc);
+    setOpError(null);
+    try {
+      await addColdChainLog(lot.id, Number(tempVal), tempLoc);
+    } catch (err: unknown) {
+      const apiErr = err as ApiError;
+      setOpError({
+        message: apiErr?.message || 'Error al registrar lectura de temperatura en el lote.',
+        action: `Registrar lectura térmica en lote ${lot.code}`,
+        status: apiErr?.status,
+        code: apiErr?.errorCode,
+        reqId: apiErr?.technicalRequestId,
+      });
+    }
   };
 
   const handleStartCert = async () => {
-    const cert = await initiateCertification(lot.id);
-    setCertificate(cert);
-    onNavigate(`/certification`);
+    setOpError(null);
+    try {
+      const cert = await initiateCertification(lot.id);
+      setCertificate(cert);
+      onNavigate(`/certification`);
+    } catch (err: unknown) {
+      const apiErr = err as ApiError;
+      setOpError({
+        message: apiErr?.message || 'Error al iniciar trámite de certificación SANIPES.',
+        action: `Iniciar trámite de certificación SANIPES para lote ${lot.code}`,
+        status: apiErr?.status,
+        code: apiErr?.errorCode,
+        reqId: apiErr?.technicalRequestId,
+      });
+    }
   };
 
   const tabs = [
@@ -128,6 +165,24 @@ export const LotDetailPage: React.FC<LotDetailPageProps> = ({ lotId, onNavigate 
 
       {/* 6-step interactive Timeline */}
       <LotTimeline timeline={lot.timeline} />
+
+      {opError && (
+        <IncidentErrorPanel
+          title={`Incidencia operativa en lote ${lot.code}`}
+          message={opError.message}
+          httpStatus={opError.status}
+          errorCode={opError.code}
+          technicalRequestId={opError.reqId}
+          module="LOTES"
+          route={`/lots/${lot.id}`}
+          category="LOTS"
+          lotId={Number(lot.id) || undefined}
+          lotCode={lot.code}
+          actionAttempted={opError.action}
+          onDismiss={() => setOpError(null)}
+          onNavigate={onNavigate}
+        />
+      )}
 
       {/* Tabs navigation */}
       <div className="border-b border-slate-200 flex items-center gap-2 overflow-x-auto">

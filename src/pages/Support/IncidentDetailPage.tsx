@@ -9,6 +9,8 @@ import {
   CheckCircle2,
   Layers,
   User,
+  Download,
+  Terminal,
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { AlertCard } from '../../components/ui/AlertCard';
@@ -353,19 +355,88 @@ export const IncidentDetailPage: React.FC<IncidentDetailPageProps> = ({
                 </div>
               )}
 
-              {incident.relatedLotId && (
+              {incident.route && (
+                <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
+                  <span className="text-slate-500">Ruta / Pantalla</span>
+                  <span className="font-mono font-semibold text-slate-700">{incident.route}</span>
+                </div>
+              )}
+
+              {incident.source && (
+                <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
+                  <span className="text-slate-500 flex items-center gap-1">
+                    <Terminal className="w-3.5 h-3.5 text-slate-400" />
+                    Origen
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[10px] font-bold">
+                    {incident.source === 'CONTEXTUAL_ERROR' ? 'Reporte Contextual' : 'Centro de Soporte'}
+                  </span>
+                </div>
+              )}
+
+              {incident.actionAttempted && (
+                <div className="py-1.5 border-b border-slate-100">
+                  <span className="text-slate-500 block">Acción realizada</span>
+                  <span className="font-semibold text-slate-800 mt-0.5 block">{incident.actionAttempted}</span>
+                </div>
+              )}
+
+              {(incident.httpStatus || incident.errorCode) && (
+                <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
+                  <span className="text-slate-500">Código / HTTP</span>
+                  <span className="font-mono font-bold text-rose-700">
+                    {incident.httpStatus ? `HTTP ${incident.httpStatus} ` : ''}
+                    {incident.errorCode ? `[${incident.errorCode}]` : ''}
+                  </span>
+                </div>
+              )}
+
+              {(incident.relatedLotId || incident.relatedLotCode) && (
                 <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
                   <span className="text-slate-500 flex items-center gap-1.5">
                     <Package className="w-3.5 h-3.5 text-slate-400" />
                     Lote relacionado
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => navigateTo(`/lots/${incident.relatedLotId}`)}
-                    className="font-mono font-bold text-[#0F6CBD] hover:underline cursor-pointer"
-                  >
-                    {incident.relatedLotCode || `Lote #${incident.relatedLotId}`}
-                  </button>
+                  {incident.relatedLotId ? (
+                    <button
+                      type="button"
+                      onClick={() => navigateTo(`/lots/${incident.relatedLotId}`)}
+                      className="font-mono font-bold text-[#0F6CBD] hover:underline cursor-pointer"
+                    >
+                      {incident.relatedLotCode || `Lote #${incident.relatedLotId}`}
+                    </button>
+                  ) : (
+                    <span className="font-mono font-bold text-[#0F6CBD]">
+                      {incident.relatedLotCode}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {incident.hasAttachment && (
+                <div className="pt-2 space-y-2">
+                  <span className="text-slate-500 block font-medium">
+                    Evidencia / Captura adjunta
+                  </span>
+                  <div className="flex items-center justify-between gap-2 p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                    <span className="font-semibold text-slate-800 truncate text-[11px]">
+                      {incident.attachmentOriginalName || 'evidencia-incidencia.png'}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        incidentService.downloadAttachment(
+                          incident.id,
+                          incident.attachmentOriginalName || `evidencia-${incident.code}.png`
+                        )
+                      }
+                      icon={<Download className="w-3.5 h-3.5" />}
+                    >
+                      Descargar
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>

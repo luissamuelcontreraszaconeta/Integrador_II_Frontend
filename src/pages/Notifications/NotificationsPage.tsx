@@ -16,6 +16,7 @@ import {
   Check
 } from 'lucide-react';
 import { notificationService } from '../../services/notificationService';
+import { IncidentErrorPanel } from '../../components/support/IncidentErrorPanel';
 import type { NotificationItem, NotificationType } from '../../types/notification';
 
 interface NotificationsPageProps {
@@ -25,6 +26,7 @@ interface NotificationsPageProps {
 export const NotificationsPage: React.FC<NotificationsPageProps> = ({ onNavigate }) => {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterTab, setFilterTab] = useState<'ALL' | 'UNREAD' | 'QUALITY' | 'COLD_CHAIN' | 'CERTIFICATION' | 'SECURITY'>('ALL');
 
@@ -35,10 +37,11 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({ onNavigate
   const loadNotifications = async () => {
     try {
       setLoading(true);
+      setError(null);
       const list = await notificationService.getNotifications();
       setNotifications(list);
-    } catch (err) {
-      console.error('Error fetching all notifications:', err);
+    } catch (err: any) {
+      setError(err?.message || 'No se pudo cargar la bandeja de notificaciones.');
     } finally {
       setLoading(false);
     }
@@ -176,6 +179,20 @@ export const NotificationsPage: React.FC<NotificationsPageProps> = ({ onNavigate
       </div>
 
       {/* Filter Tabs & Search */}
+      {error && (
+        <IncidentErrorPanel
+          title="Error en Centro de Notificaciones"
+          message={error}
+          module="NOTIFICATIONS"
+          route="/notifications"
+          category="NOTIFICATIONS"
+          actionAttempted="Consultar bandeja de alertas y notificaciones"
+          onRetry={loadNotifications}
+          onDismiss={() => setError(null)}
+          onNavigate={onNavigate}
+        />
+      )}
+
       <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
         <div className="relative flex-1">
           <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />

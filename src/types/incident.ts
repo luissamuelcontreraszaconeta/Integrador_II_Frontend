@@ -48,6 +48,23 @@ export type JiraSyncStatus =
 
 export type SlaAuthority = 'LOCAL_ESTIMATE' | 'JIRA_AUTHORITATIVE';
 
+export type IncidentSource = 'MANUAL_SUPPORT' | 'CONTEXTUAL_ERROR';
+
+export interface ContextualIncidentMetadata {
+  source?: IncidentSource;
+  category?: IncidentCategory;
+  module?: string;
+  route?: string;
+  timestamp?: string;
+  actionAttempted?: string;
+  lotId?: number;
+  lotCode?: string;
+  httpStatus?: number;
+  errorCode?: string;
+  technicalRequestId?: string;
+  sanitizedErrorMessage?: string;
+}
+
 export interface CreateIncidentRequest {
   category: IncidentCategory;
   summary: string;
@@ -57,11 +74,19 @@ export interface CreateIncidentRequest {
   module?: string;
   route?: string;
   relatedLotId?: number;
+  lotCode?: string;
+  source?: IncidentSource;
+  actionAttempted?: string;
+  httpStatus?: number;
+  errorCode?: string;
+  technicalRequestId?: string;
+  sanitizedErrorMessage?: string;
 }
 
 export interface IncidentDTO {
   id: number;
   code: string;
+  correlationId?: string;
   category: IncidentCategory;
   categoryCode: string;
   categoryLabel: string;
@@ -69,6 +94,7 @@ export interface IncidentDTO {
   description: string;
   impact: IncidentImpact;
   urgency: IncidentUrgency;
+  workContinuity?: WorkContinuity;
   priority: IncidentPriority;
   priorityLabel: string;
   status: IncidentStatus;
@@ -77,6 +103,17 @@ export interface IncidentDTO {
   route?: string;
   relatedLotId?: number;
   relatedLotCode?: string;
+  source?: IncidentSource;
+  actionAttempted?: string;
+  httpStatus?: number;
+  errorCode?: string;
+  technicalRequestId?: string;
+  sanitizedErrorMessage?: string;
+  attachmentOriginalName?: string | null;
+  attachmentMimeType?: string | null;
+  attachmentSize?: number | null;
+  hasAttachment?: boolean;
+  jiraAttachmentSynced?: boolean;
   reporterUsername: string;
   reporterRole: string;
   createdAt: string;
@@ -207,23 +244,113 @@ export const JIRA_SYNC_USER_MESSAGES: Record<JiraSyncStatus, string> = {
 };
 
 /**
+ * Matriz oficial de Prioridad Impacto × Continuidad (Urgencia) alineada a Semana 14 UTP.
+ * Nota: El backend es siempre la autoridad final; esta función sirve únicamente como vista previa informativa.
+ */
+export function previewCalculatedPriority(
+  impact: IncidentImpact | '',
+  workContinuity: WorkContinuity | ''
+): IncidentPriority | null {
+  if (!impact || !workContinuity) return null;
+  const urgency: IncidentUrgency =
+    workContinuity === 'NO_PUEDE_CONTINUAR'
+      ? 'HIGH'
+      : workContinuity === 'CONTINUA_PARCIALMENTE'
+      ? 'MEDIUM'
+      : 'LOW';
+
+  if (impact === 'HIGH') {
+    if (urgency === 'HIGH') return 'P1_CRITICAL';
+    if (urgency === 'MEDIUM') return 'P2_HIGH';
+    return 'P3_MEDIUM';
+  }
+  if (impact === 'MEDIUM') {
+    if (urgency === 'HIGH') return 'P2_HIGH';
+    if (urgency === 'MEDIUM') return 'P3_MEDIUM';
+    return 'P4_LOW';
+  }
+  // impact === 'LOW'
+  if (urgency === 'HIGH') return 'P3_MEDIUM';
+  return 'P4_LOW';
+}
+
+/**
  * Infiere el código de módulo funcional a partir de la ruta actual sin inventar valores arbitrarios.
- * Si no coincide con una ruta conocida, retorna undefined para que el backend utilice el módulo por defecto de la categoría.
  */
 export function inferModuleFromRoute(pathname: string): string | undefined {
   if (!pathname) return undefined;
   const p = pathname.toLowerCase();
   if (p.startsWith('/lots')) return 'LOTES';
-  if (p.startsWith('/quality/coldchain')) return 'FRIO';
+  if (p.startsWith('/quality/coldchain') || p.startsWith('/cold-chain')) return 'FRIO';
   if (p.startsWith('/quality')) return 'CALIDAD';
   if (p.startsWith('/logistics')) return 'LOGISTICA';
   if (p.startsWith('/certification')) return 'CERTIFICACION';
   if (p.startsWith('/dispatch')) return 'DESPACHO';
   if (p.startsWith('/management')) return 'GERENCIA';
+  if (p.startsWith('/admin/roles') || p.startsWith('/admin/modules')) return 'ROLES';
   if (p.startsWith('/admin')) return 'ADMINISTRACION';
   if (p.startsWith('/superadmin')) return 'SEGURIDAD';
   if (p.startsWith('/notifications')) return 'NOTIFICATIONS';
+  if (p.startsWith('/verificar')) return 'TRAZABILIDAD';
   if (p.startsWith('/support')) return 'SOPORTE';
   if (p.startsWith('/dashboard')) return 'DASHBOARD';
   return undefined;
+}
+
+/**
+ * Infiere la categoría de incidencia a partir del módulo o ruta cuando se abre en modo contextual.
+ */
+export function inferCategoryFromContext(
+  module?: string,
+  route?: string,
+  httpStatus?: number
+): IncidentCategory {
+  if (httpStatus === 502 || httpStatus === 503 || httpStatus === 504) {
+    return 'INFRASTRUCTURE';
+  }
+  const mod = (module || inferModuleFromRoute(route || '') || '').toUpperCase();
+  if (mod.includes('LOTE') || mod.includes('PRODUCCION')) return 'LOTS';
+  if (mod.includes('FRIO') || mod.includes('COLD')) return 'COLD_CHAIN';
+  if (mod.includes('CALIDAD') || mod.includes('QA')) return 'QUALITY';
+  if (mod.includes('DOCUMENT')) return 'DOCUMENTS';
+  if (mod.includes('CERTIFICA')) return 'CERTIFICATION';
+  if (mod.includes('TRAZABILIDAD') || mod.includes('QR')) return 'TRACEABILITY_QR';
+  if (mod.includes('LOGISTICA') || mod.includes('DESPACHO')) return 'LOGISTICS';
+  if (mod.includes('DASHBOARD') || mod.includes('GERENCIA')) return 'DASHBOARD';
+  if (mod.includes('NOTIFICA')) return 'NOTIFICATIONS';
+  if (mod.includes('ADMIN') || mod.includes('ROL') || mod.includes('USUARIO') || mod.includes('SEGURIDAD')) {
+    return 'ACCESS_CONTROL';
+  }
+  if (mod.includes('AUTENTICACION')) return 'AUTHENTICATION';
+  if (httpStatus && httpStatus >= 500) return 'BACKEND_API';
+  return 'BACKEND_API';
+}
+
+/**
+ * Determina si un mensaje de error corresponde únicamente a una validación simple de formulario
+ * (ej. campo obligatorio vacío, longitud mínima, formato de archivo local) que NO debe disparar reporte contextual (CTX-INC-08).
+ */
+export function isTrivialValidationError(
+  message?: string | null,
+  httpStatus?: number,
+  fieldErrors?: Record<string, string>
+): boolean {
+  if (fieldErrors && Object.keys(fieldErrors).length > 0) {
+    return true;
+  }
+  if (!message) return false;
+  const m = message.toLowerCase();
+  if (
+    m.includes('obligatorio') ||
+    m.includes('al menos 15 caracteres') ||
+    m.includes('al menos 5 caracteres') ||
+    m.includes('al menos 10 caracteres') ||
+    m.includes('supera el límite de 5 mb') ||
+    m.includes('solo se admiten formatos') ||
+    m.includes('selecciona una categoría') ||
+    m.includes('ingresa un título')
+  ) {
+    return !httpStatus || httpStatus === 400;
+  }
+  return false;
 }
