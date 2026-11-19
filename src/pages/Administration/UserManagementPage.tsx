@@ -3,6 +3,7 @@ import { PageHeader } from '../../components/layout/PageHeader';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { adminService } from '../../services/adminService';
+import { IncidentErrorPanel } from '../../components/support/IncidentErrorPanel';
 import { UserAdmin, CreateUserPayload, UpdateUserPayload } from '../../types/admin';
 import {
   Users,
@@ -235,15 +236,17 @@ export const UserManagementPage: React.FC<UserManagementPageProps> = ({ onNaviga
       )}
 
       {error && (
-        <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs flex items-center justify-between shadow-xs">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
-            <span>{error}</span>
-          </div>
-          <Button variant="outline" size="sm" onClick={() => setError(null)}>
-            Cerrar
-          </Button>
-        </div>
+        <IncidentErrorPanel
+          title="Error en Gestión de Usuarios"
+          message={error}
+          module="USUARIOS"
+          route="/admin/users"
+          category="ACCESS_CONTROL"
+          actionAttempted="Consultar o modificar cuenta de usuario en administración"
+          onRetry={loadUsers}
+          onDismiss={() => setError(null)}
+          onNavigate={onNavigate}
+        />
       )}
 
       {/* Filter and Search Bar */}

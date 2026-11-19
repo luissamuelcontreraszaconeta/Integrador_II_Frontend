@@ -4,6 +4,8 @@ import { PageHeader } from '../../components/layout/PageHeader';
 import { Button } from '../../components/ui/Button';
 import { Select } from '../../components/ui/Select';
 import { ExpedienteDigitalView } from '../../components/lots/ExpedienteDigitalView';
+import { IncidentErrorPanel } from '../../components/support/IncidentErrorPanel';
+import { ApiError } from '../../services/apiClient';
 import { SanitaryCertificate } from '../../types/certification';
 import { Award, CheckCircle2, FileText, Send, ShieldCheck, Clock, Truck, AlertTriangle } from 'lucide-react';
 import { AlertCard } from '../../components/ui/AlertCard';
@@ -109,11 +111,26 @@ export const CertificationTrackerPage: React.FC<CertificationTrackerPageProps> =
       />
 
       {feedbackMsg && (
-        <AlertCard
-          type={feedbackMsg.type}
-          title={feedbackMsg.type === 'error' ? 'Validación Requerida' : 'Operación Exitosa'}
-          message={feedbackMsg.text}
-        />
+        feedbackMsg.type === 'error' ? (
+          <IncidentErrorPanel
+            title="Validación / Error en Certificación SANIPES"
+            message={feedbackMsg.text}
+            module="CERTIFICACION"
+            route="/certification"
+            category="CERTIFICATION"
+            lotId={Number(selectedLot?.id) || undefined}
+            lotCode={selectedLot?.code}
+            actionAttempted={`Tramitar expediente de certificación sanitaria SANIPES (${selectedLot?.code || 'Lote'})`}
+            onDismiss={() => setFeedbackMsg(null)}
+            onNavigate={onNavigate}
+          />
+        ) : (
+          <AlertCard
+            type="success"
+            title="Operación Exitosa"
+            message={feedbackMsg.text}
+          />
+        )
       )}
 
       {/* Lot selector & actions */}
